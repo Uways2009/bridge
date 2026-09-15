@@ -1,0 +1,363 @@
+{
+  "admins": [
+    {
+      "id": "admin-root",
+      "email": "admin@naijabridge.org",
+      "name": "Administrator",
+      "role": "Super Admin",
+      "title": "System Administrator",
+      "salt": "a74237a08abc36ab2a9fe26e256b4070",
+      "passwordHash": "9b2785cd9549e5b9a3ec3bb1a1aab638bb5737a68a79c3f998ffb97d53dcbb236dab89a9ec3171c69dcf8957fe11d81582f7d9e7c3cf31d952ef691233016787",
+      "status": "Active",
+      "permissions": [
+        "manage_all"
+      ],
+      "createdAt": "2026-09-10T21:01:05.365Z",
+      "lastLogin": "2026-09-12T06:30:24.305Z"
+    },
+    {
+      "id": "admin-owner",
+      "email": "abuunaysah74@gmail.com",
+      "name": "Platform Owner",
+      "role": "Content Manager",
+      "title": "Content Manager",
+      "salt": "59820072130f982434fe2acd2d4c5430",
+      "passwordHash": "21e66e1cf75999e93ca5e26a0c2d68042c585718e6525d0aa96d3b4a3bd643dd635466f20899cd768f929fe153ac6e4c131f135187234f4ade6402f1df48b4e7",
+      "status": "Active",
+      "permissions": [
+        "manage_all"
+      ],
+      "createdAt": "2026-09-10T21:01:05.365Z",
+      "lastLogin": "2026-09-11T07:55:08.803Z"
+    },
+    {
+      "id": "admin-root",
+      "email": "hubproductpro@gmail.com",
+      "name": "Administrator",
+      "role": "Super Admin",
+      "title": "System Administrator",
+      "salt": "2bb7535dd597db8928df42c876a16ec8",
+      "passwordHash": "abef360a807dc81c99488f4b8f103cd68b137a5c5a7a48241c2e94631e3866eb040aa0ee2d49b4b7e0f7a02377b36bec743c3a4ba4febb6cdf3fc13028412da0",
+      "status": "Active",
+      "permissions": [
+        "manage_all"
+      ],
+      "createdAt": "2026-09-11T07:53:23.028Z",
+      "lastLogin": "2026-09-12T07:16:15.358Z"
+    }
+  ],
+  "opportunities": [],
+  "events": [],
+  "inquiries": [],
+  "subscribers": [],
+  "activity_logs": [
+    {
+      "id": "log-1789197375359-856",
+      "adminName": "Administrator",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-12T07:16:15.359Z"
+    },
+    {
+      "id": "log-1789196909963-296",
+      "adminName": "Administrator",
+      "action": "Password Reset Dispatched",
+      "category": "User Management",
+      "details": "Password reset requested for admin@naijabridge.org",
+      "timestamp": "2026-09-12T07:08:29.963Z"
+    },
+    {
+      "id": "log-1789196909874-349",
+      "adminName": "Administrator",
+      "action": "Password Reset Dispatched",
+      "category": "User Management",
+      "details": "Password reset requested for admin@naijabridge.org",
+      "timestamp": "2026-09-12T07:08:29.874Z"
+    },
+    {
+      "id": "log-1789196909679-225",
+      "adminName": "Administrator",
+      "action": "Password Reset Dispatched",
+      "category": "User Management",
+      "details": "Password reset requested for admin@naijabridge.org",
+      "timestamp": "2026-09-12T07:08:29.679Z"
+    },
+    {
+      "id": "log-1789196909552-380",
+      "adminName": "Administrator",
+      "action": "Password Reset Dispatched",
+      "category": "User Management",
+      "details": "Password reset requested for admin@naijabridge.org",
+      "timestamp": "2026-09-12T07:08:29.552Z"
+    },
+    {
+      "id": "log-1789196909093-712",
+      "adminName": "Administrator",
+      "action": "Password Reset Dispatched",
+      "category": "User Management",
+      "details": "Password reset requested for admin@naijabridge.org",
+      "timestamp": "2026-09-12T07:08:29.093Z"
+    },
+    {
+      "id": "log-1789196899198-674",
+      "adminName": "Administrator",
+      "action": "User Role Updated",
+      "category": "User Management",
+      "details": "Changed role for abuunaysah74@gmail.com from 'super_admin' to 'content_manager'",
+      "timestamp": "2026-09-12T07:08:19.198Z"
+    },
+    {
+      "id": "log-1789196892531-516",
+      "adminName": "Administrator",
+      "action": "Password Reset Dispatched",
+      "category": "User Management",
+      "details": "Password reset requested for abuunaysah74@gmail.com",
+      "timestamp": "2026-09-12T07:08:12.531Z"
+    },
+    {
+      "id": "log-1789196890803-734",
+      "adminName": "Administrator",
+      "action": "Password Reset Dispatched",
+      "category": "User Management",
+      "details": "Password reset requested for abuunaysah74@gmail.com",
+      "timestamp": "2026-09-12T07:08:10.803Z"
+    },
+    {
+      "id": "log-1789196890717-991",
+      "adminName": "Administrator",
+      "action": "Password Reset Dispatched",
+      "category": "User Management",
+      "details": "Password reset requested for abuunaysah74@gmail.com",
+      "timestamp": "2026-09-12T07:08:10.717Z"
+    },
+    {
+      "id": "log-1789196890194-671",
+      "adminName": "Administrator",
+      "action": "Password Reset Dispatched",
+      "category": "User Management",
+      "details": "Password reset requested for abuunaysah74@gmail.com",
+      "timestamp": "2026-09-12T07:08:10.194Z"
+    },
+    {
+      "id": "log-1789196867095-238",
+      "adminName": "Administrator",
+      "action": "Password Reset Dispatched",
+      "category": "User Management",
+      "details": "Password reset requested for admin@naijabridge.org",
+      "timestamp": "2026-09-12T07:07:47.095Z"
+    },
+    {
+      "id": "log-1789196865723-557",
+      "adminName": "Administrator",
+      "action": "Password Reset Dispatched",
+      "category": "User Management",
+      "details": "Password reset requested for admin@naijabridge.org",
+      "timestamp": "2026-09-12T07:07:45.723Z"
+    },
+    {
+      "id": "log-1789196846767-318",
+      "adminName": "Administrator",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-12T07:07:26.767Z"
+    },
+    {
+      "id": "log-1789194624305-128",
+      "adminName": "Administrator",
+      "action": "Quick Access Login",
+      "category": "Security",
+      "details": "Admin session initialized via 1-click credential provider.",
+      "timestamp": "2026-09-12T06:30:24.305Z"
+    },
+    {
+      "id": "log-1789194619582-170",
+      "adminName": "Administrator",
+      "action": "User Account Deleted",
+      "category": "User Management",
+      "details": "Permanently deleted user account editor.test@naijabridge.org (Role: verification_officer)",
+      "timestamp": "2026-09-12T06:30:19.582Z"
+    },
+    {
+      "id": "log-1789194619568-969",
+      "adminName": "Administrator",
+      "action": "Account Disabled",
+      "category": "User Management",
+      "details": "Account status for editor.test@naijabridge.org changed to 'disabled'",
+      "timestamp": "2026-09-12T06:30:19.568Z"
+    },
+    {
+      "id": "log-1789194619562-846",
+      "adminName": "Administrator",
+      "action": "User Role Updated",
+      "category": "User Management",
+      "details": "Changed role for editor.test@naijabridge.org from 'content_manager' to 'verification_officer'",
+      "timestamp": "2026-09-12T06:30:19.562Z"
+    },
+    {
+      "id": "log-1789194619554-415",
+      "adminName": "Administrator",
+      "action": "User Account Created",
+      "category": "User Management",
+      "details": "Created user editor.test@naijabridge.org with role 'content_manager' (status: active)",
+      "timestamp": "2026-09-12T06:30:19.554Z"
+    },
+    {
+      "id": "log-1789194619462-65",
+      "adminName": "Administrator",
+      "action": "Quick Access Login",
+      "category": "Security",
+      "details": "Admin session initialized via 1-click credential provider.",
+      "timestamp": "2026-09-12T06:30:19.462Z"
+    },
+    {
+      "id": "log-1789194615207-9",
+      "adminName": "Administrator",
+      "action": "Quick Access Login",
+      "category": "Security",
+      "details": "Admin session initialized via 1-click credential provider.",
+      "timestamp": "2026-09-12T06:30:15.207Z"
+    },
+    {
+      "id": "log-1789113308804-183",
+      "adminName": "Platform Owner",
+      "action": "Password Reset",
+      "category": "Security",
+      "details": "Password updated and session initialized.",
+      "timestamp": "2026-09-11T07:55:08.804Z"
+    },
+    {
+      "id": "log-1789113306077-388",
+      "adminName": "Platform Owner",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-11T07:55:06.077Z"
+    },
+    {
+      "id": "log-1789113303260-981",
+      "adminName": "Administrator",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-11T07:55:03.260Z"
+    },
+    {
+      "id": "log-1789113300795-193",
+      "adminName": "Platform Owner",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-11T07:55:00.795Z"
+    },
+    {
+      "id": "log-1789113287304-41",
+      "adminName": "Platform Owner",
+      "action": "Quick Access Login",
+      "category": "Security",
+      "details": "Admin session initialized via 1-click credential provider.",
+      "timestamp": "2026-09-11T07:54:47.304Z"
+    },
+    {
+      "id": "log-1789113279877-472",
+      "adminName": "Administrator",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-11T07:54:39.877Z"
+    },
+    {
+      "id": "log-1789113208626-948",
+      "adminName": "Platform Owner",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-11T07:53:28.626Z"
+    },
+    {
+      "id": "log-1789113194357-175",
+      "adminName": "Administrator",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-11T07:53:14.357Z"
+    },
+    {
+      "id": "log-1789113144650-938",
+      "adminName": "Platform Owner",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-11T07:52:24.650Z"
+    },
+    {
+      "id": "log-1789113142841-25",
+      "adminName": "Administrator",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-11T07:52:22.841Z"
+    }
+  ],
+  "users": [
+    {
+      "uid": "admin-root",
+      "displayName": "Administrator",
+      "email": "admin@naijabridge.org",
+      "role": "super_admin",
+      "accountStatus": "active",
+      "createdAt": "2026-09-10T21:01:05.365Z",
+      "updatedAt": "2026-09-12T07:08:29.425Z",
+      "lastLoginAt": "2026-09-11T07:55:03.260Z",
+      "createdBy": "System Initialization",
+      "requiresPasswordChange": true,
+      "updatedBy": "Administrator"
+    },
+    {
+      "uid": "admin-owner",
+      "displayName": "Platform Owner",
+      "email": "abuunaysah74@gmail.com",
+      "role": "content_manager",
+      "accountStatus": "active",
+      "createdAt": "2026-09-10T21:01:05.365Z",
+      "updatedAt": "2026-09-12T07:08:19.198Z",
+      "lastLoginAt": "2026-09-11T07:55:08.803Z",
+      "createdBy": "System Initialization",
+      "requiresPasswordChange": true,
+      "updatedBy": "Administrator"
+    },
+    {
+      "uid": "admin-root",
+      "displayName": "Administrator",
+      "email": "hubproductpro@gmail.com",
+      "role": "super_admin",
+      "accountStatus": "active",
+      "createdAt": "2026-09-11T07:53:23.028Z",
+      "updatedAt": "2026-09-12T06:30:14.633Z",
+      "lastLoginAt": "2026-09-12T06:30:14.633Z",
+      "createdBy": "System Initialization",
+      "requiresPasswordChange": false
+    }
+  ],
+  "cms": {
+    "announcement": {
+      "active": false,
+      "message": "",
+      "linkText": "",
+      "linkUrl": ""
+    },
+    "heroHeadline": "Build your next opportunity.",
+    "heroSubheadline": "A remote-first platform connecting young Nigerians to verified opportunities, practical digital skills, mentorship, and career support."
+  },
+  "academy_courses": [],
+  "academy_applications": [],
+  "academy_enrollments": [],
+  "academy_schedules": [],
+  "academy_materials": [],
+  "academy_attendance": [],
+  "academy_assignments": [],
+  "academy_announcements": [],
+  "academy_certificates": [],
+  "faqs": []
+}

@@ -1,0 +1,7 @@
+{
+  "name": "NaijaBridge",
+  "description": "A remote-first platform connecting young Nigerians to verified opportunities, practical digital skills, mentorship, and career support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

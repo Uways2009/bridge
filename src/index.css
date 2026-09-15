@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Outfit", "Plus Jakarta Sans", system-ui, sans-serif;
+
+  --color-brand-navy: #0B1F33;
+  --color-brand-charcoal: #1F2933;
+  --color-brand-cream: #F8F7F2;
+  --color-brand-green: #087F5B;
+  --color-brand-teal: #0F766E;
+  --color-brand-gold: #D99A28;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+}
+
+/* Custom subtle pattern for hero and section headers */
+.bg-subtle-pattern {
+  background-color: #F8F7F2;
+  background-image: radial-gradient(#087F5B 0.65px, transparent 0.65px), radial-gradient(#D99A28 0.65px, #F8F7F2 0.65px);
+  background-size: 28px 28px;
+  background-position: 0 0, 14px 14px;
+}
+

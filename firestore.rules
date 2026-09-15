@@ -1,0 +1,127 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    match /opportunities/{id} {
+      allow read, write: if true;
+    }
+
+    match /events/{id} {
+      allow read, write: if true;
+    }
+
+    match /services/{id} {
+      allow read, write: if true;
+    }
+
+    match /admin_drafts/{id} {
+      allow read, write: if true;
+    }
+
+    match /settings/{id} {
+      allow read, write: if true;
+    }
+
+    match /team_members/{id} {
+      allow read, write: if true;
+    }
+
+    match /products_resources/{id} {
+      allow read, write: if true;
+    }
+
+    match /contact_info/{id} {
+      allow read, write: if true;
+    }
+
+    match /learning_tracks/{id} {
+      allow read, write: if true;
+    }
+
+    match /faqs/{id} {
+      allow read, write: if true;
+    }
+
+    match /testimonials/{id} {
+      allow read, write: if true;
+    }
+
+    match /partnerships/{id} {
+      allow read, write: if true;
+    }
+
+    match /site_settings/{id} {
+      allow read, write: if true;
+    }
+
+    match /media_assets/{id} {
+      allow read, write: if true;
+    }
+
+    match /enquiries/{id} {
+      allow read, write: if true;
+    }
+
+    match /newsletter_subscribers/{id} {
+      allow read, write: if true;
+    }
+
+    match /admin_activity_logs/{id} {
+      allow read, create: if true;
+      allow update, delete: if true;
+    }
+
+    match /admins/{id} {
+      allow read, write: if true;
+    }
+
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+
+    match /academy_courses/{id} {
+      allow read, write: if true;
+    }
+
+    match /academy_applications/{id} {
+      allow read, write: if true;
+    }
+
+    match /academy_enrollments/{id} {
+      allow read, write: if true;
+    }
+
+    match /academy_schedules/{id} {
+      allow read, write: if true;
+    }
+
+    match /academy_materials/{id} {
+      allow read, write: if true;
+    }
+
+    match /academy_attendance/{id} {
+      allow read, write: if true;
+    }
+
+    match /academy_assignments/{id} {
+      allow read, write: if true;
+    }
+
+    match /academy_announcements/{id} {
+      allow read, write: if true;
+    }
+
+    match /academy_certificates/{id} {
+      allow read, write: if true;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

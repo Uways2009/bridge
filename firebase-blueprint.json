@@ -1,0 +1,553 @@
+{
+  "entities": {
+    "admins": {
+      "title": "Admins",
+      "description": "Authorized administrators with role-based access control.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["super_admin", "content_manager", "verification_officer", "community_manager", "support_manager"] },
+        "name": { "type": "string" },
+        "title": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "suspended"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["email", "role", "name", "status"]
+    },
+    "opportunities": {
+      "title": "Opportunities",
+      "description": "Verified Nigerian opportunities including scholarships, grants, jobs, and internships.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "type": { "type": "string" },
+        "location": { "type": "string" },
+        "isRemote": { "type": "boolean" },
+        "deadline": { "type": "string" },
+        "officialLink": { "type": "string" },
+        "verificationStatus": { "type": "string" },
+        "verifiedBy": { "type": "string" },
+        "status": { "type": "string", "enum": ["draft", "pending_review", "published", "archived"] },
+        "featured": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "publishedAt": { "type": "string" },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["title", "category", "status", "officialLink"]
+    },
+    "events": {
+      "title": "Events",
+      "description": "Workshops, webinars, and masterclasses.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "speaker": { "type": "string" },
+        "registrationLimit": { "type": "number" },
+        "registeredCount": { "type": "number" },
+        "meetingLink": { "type": "string" },
+        "status": { "type": "string", "enum": ["draft", "published", "archived"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["title", "date", "status"]
+    },
+    "services": {
+      "title": "Services",
+      "description": "Practical support services and career offerings for Nigerians.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "tagline": { "type": "string" },
+        "description": { "type": "string" },
+        "fullDescription": { "type": "string" },
+        "category": { "type": "string" },
+        "targetAudience": { "type": "string" },
+        "expectedOutcome": { "type": "string" },
+        "deliveryTime": { "type": "string" },
+        "priceNaira": { "type": "number" },
+        "isFree": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["draft", "published", "archived"] },
+        "displayOrder": { "type": "number" },
+        "popular": { "type": "boolean" },
+        "badge": { "type": "string" }
+      },
+      "required": ["title", "description", "targetAudience", "expectedOutcome"]
+    },
+    "team_members": {
+      "title": "Team Members",
+      "description": "Founding team, leadership, advisors, and contributors of NaijaBridge.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "category": { "type": "string", "enum": ["founder", "co-founder", "director", "advisor", "team_member", "volunteer"] },
+        "photoUrl": { "type": "string" },
+        "bio": { "type": "string" },
+        "fullBio": { "type": "string" },
+        "responsibilities": { "type": "string" },
+        "location": { "type": "string" },
+        "displayOrder": { "type": "number" },
+        "status": { "type": "string", "enum": ["draft", "published", "archived"] },
+        "consentApproved": { "type": "boolean" }
+      },
+      "required": ["name", "role", "bio"]
+    },
+    "contact_info": {
+      "title": "Contact Info",
+      "description": "Direct communication channels, working hours, office address, and social links.",
+      "type": "object",
+      "properties": {
+        "primaryEmail": { "type": "string" },
+        "supportEmail": { "type": "string" },
+        "whatsAppNumber": { "type": "string" },
+        "telephoneNumber": { "type": "string" },
+        "officeAddress": { "type": "string" },
+        "workingHours": { "type": "string" },
+        "recipientEmail": { "type": "string" }
+      },
+      "required": ["primaryEmail", "whatsAppNumber"]
+    },
+    "products_resources": {
+      "title": "Products and Resources",
+      "description": "Digital guides, toolkits, educational downloads, and templates.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "downloadUrl": { "type": "string" },
+        "priceNaira": { "type": "number" },
+        "isFree": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["draft", "published", "archived"] }
+      },
+      "required": ["title", "description", "downloadUrl"]
+    },
+    "learning_tracks": {
+      "title": "Learning Tracks",
+      "description": "Skill pathways for youth digital enablement.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "duration": { "type": "string" },
+        "level": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["title", "description"]
+    },
+    "faqs": {
+      "title": "FAQs",
+      "description": "Frequently asked questions for user support.",
+      "type": "object",
+      "properties": {
+        "question": { "type": "string" },
+        "answer": { "type": "string" },
+        "category": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["question", "answer"]
+    },
+    "testimonials": {
+      "title": "Testimonials",
+      "description": "Verified beneficiary feedback and outcomes.",
+      "type": "object",
+      "properties": {
+        "quote": { "type": "string" },
+        "author": { "type": "string" },
+        "role": { "type": "string" },
+        "location": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["quote", "author"]
+    },
+    "partnerships": {
+      "title": "Partnerships",
+      "description": "Ecosystem and institutional partners.",
+      "type": "object",
+      "properties": {
+        "organization": { "type": "string" },
+        "type": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["organization"]
+    },
+    "enquiries": {
+      "title": "Enquiries",
+      "description": "Public contact, support, partnership, and mentorship submissions.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "type": { "type": "string" },
+        "category": { "type": "string" },
+        "organization": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string" },
+        "submittedAt": { "type": "string" }
+      },
+      "required": ["name", "email", "message"]
+    },
+    "newsletter_subscribers": {
+      "title": "Newsletter Subscribers",
+      "description": "Email subscribers for weekly opportunity digests.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "source": { "type": "string" },
+        "status": { "type": "string" },
+        "joinedDate": { "type": "string" }
+      },
+      "required": ["email"]
+    },
+    "site_settings": {
+      "title": "Site Settings",
+      "description": "Global website configuration, logos, hero copy, and banner announcements.",
+      "type": "object",
+      "properties": {
+        "logoUrl": { "type": "string" },
+        "logoDarkUrl": { "type": "string" },
+        "faviconUrl": { "type": "string" },
+        "logoAlt": { "type": "string" },
+        "heroHeadline": { "type": "string" },
+        "heroSubheadline": { "type": "string" },
+        "announcement": { "type": "object" },
+        "updatedAt": { "type": "string" },
+        "updatedBy": { "type": "string" }
+      }
+    },
+    "admin_activity_logs": {
+      "title": "Admin Activity Logs",
+      "description": "Audit trail for critical administrative actions.",
+      "type": "object",
+      "properties": {
+        "adminEmail": { "type": "string" },
+        "adminName": { "type": "string" },
+        "action": { "type": "string" },
+        "category": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["adminEmail", "action", "timestamp"]
+    },
+    "users": {
+      "title": "Users",
+      "description": "User accounts with role-based access control and activation state.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "role": {
+          "type": "string",
+          "enum": [
+            "super_admin",
+            "academy_manager",
+            "instructor",
+            "teaching_assistant",
+            "student",
+            "content_manager",
+            "verification_officer",
+            "community_manager",
+            "support_manager",
+            "member"
+          ]
+        },
+        "accountStatus": {
+          "type": "string",
+          "enum": ["active", "disabled", "pending_activation"]
+        },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "lastLoginAt": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "updatedBy": { "type": "string" },
+        "requiresPasswordChange": { "type": "boolean" }
+      },
+      "required": ["uid", "email", "role", "accountStatus"]
+    },
+    "academy_courses": {
+      "title": "Academy Courses",
+      "description": "Digital skill and tech courses offered by NaijaBridge Tech Academy.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "instructorName": { "type": "string" },
+        "instructorId": { "type": "string" },
+        "duration": { "type": "string" },
+        "skillLevel": { "type": "string", "enum": ["Beginner", "Intermediate", "Advanced", "All Levels"] },
+        "deliveryFormat": { "type": "string", "enum": ["Online Live", "Self-Paced", "Hybrid (Lagos/Remote)"] },
+        "tuitionStatus": { "type": "string", "enum": ["tuition-free", "paid", "sponsored", "closed"] },
+        "priceNaira": { "type": "number" },
+        "publishedStatus": { "type": "string", "enum": ["draft", "published", "archived"] },
+        "startDate": { "type": "string" },
+        "applicationDeadline": { "type": "string" },
+        "modules": { "type": "array" },
+        "completionCriteria": { "type": "object" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["title", "category", "tuitionStatus", "publishedStatus"]
+    },
+    "academy_applications": {
+      "title": "Academy Applications",
+      "description": "Student applications for tech academy cohorts.",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "courseTitle": { "type": "string" },
+        "applicantName": { "type": "string" },
+        "applicantEmail": { "type": "string" },
+        "applicantPhone": { "type": "string" },
+        "applicantState": { "type": "string" },
+        "education": { "type": "string" },
+        "motivation": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["received", "under_review", "accepted", "waitlisted", "rejected", "completed"]
+        },
+        "submittedAt": { "type": "string" },
+        "reviewedBy": { "type": "string" },
+        "reviewedAt": { "type": "string" },
+        "reviewerNotes": { "type": "string" }
+      },
+      "required": ["courseId", "applicantName", "applicantEmail", "status"]
+    },
+    "academy_enrollments": {
+      "title": "Academy Enrollments",
+      "description": "Accepted student cohort enrollments and completion tracking.",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "courseTitle": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentEmail": { "type": "string" },
+        "studentName": { "type": "string" },
+        "status": { "type": "string", "enum": ["enrolled", "in_progress", "completed", "dropped"] },
+        "progress": { "type": "number" },
+        "attendanceRate": { "type": "number" },
+        "assignmentsCompleted": { "type": "number" },
+        "certificateIssued": { "type": "boolean" },
+        "certificateId": { "type": "string" },
+        "enrolledAt": { "type": "string" }
+      },
+      "required": ["courseId", "studentEmail", "status"]
+    },
+    "academy_schedules": {
+      "title": "Academy Schedules",
+      "description": "Class dates, lecture times, and meeting links.",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "title": { "type": "string" },
+        "sessionDate": { "type": "string" },
+        "sessionTime": { "type": "string" },
+        "meetingLink": { "type": "string" },
+        "instructorName": { "type": "string" },
+        "topic": { "type": "string" },
+        "status": { "type": "string", "enum": ["scheduled", "completed", "cancelled"] }
+      },
+      "required": ["courseId", "title", "sessionDate"]
+    },
+    "academy_materials": {
+      "title": "Academy Learning Materials",
+      "description": "Course reading lists, slides, videos, and project guides.",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "title": { "type": "string" },
+        "moduleName": { "type": "string" },
+        "type": { "type": "string", "enum": ["video", "slides", "document", "code", "guide"] },
+        "url": { "type": "string" },
+        "description": { "type": "string" },
+        "addedAt": { "type": "string" }
+      },
+      "required": ["courseId", "title", "url"]
+    },
+    "academy_attendance": {
+      "title": "Academy Attendance",
+      "description": "Lecture attendance records per class session.",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "scheduleId": { "type": "string" },
+        "sessionDate": { "type": "string" },
+        "records": { "type": "array" },
+        "recordedBy": { "type": "string" },
+        "recordedAt": { "type": "string" }
+      },
+      "required": ["courseId", "sessionDate"]
+    },
+    "academy_assignments": {
+      "title": "Academy Assignments",
+      "description": "Hands-on projects and grading for course cohorts.",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "maxScore": { "type": "number" },
+        "submissions": { "type": "array" }
+      },
+      "required": ["courseId", "title", "dueDate"]
+    },
+    "academy_announcements": {
+      "title": "Academy Announcements",
+      "description": "Broadcasts and alerts posted to course cohorts.",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "postedBy": { "type": "string" },
+        "postedAt": { "type": "string" },
+        "isPinned": { "type": "boolean" }
+      },
+      "required": ["courseId", "title", "content"]
+    },
+    "academy_certificates": {
+      "title": "Academy Certificates",
+      "description": "Issued graduation certificates verified against completion criteria.",
+      "type": "object",
+      "properties": {
+        "certificateId": { "type": "string" },
+        "courseId": { "type": "string" },
+        "courseTitle": { "type": "string" },
+        "studentEmail": { "type": "string" },
+        "studentName": { "type": "string" },
+        "issueDate": { "type": "string" },
+        "verificationCode": { "type": "string" },
+        "issuedBy": { "type": "string" },
+        "criteriaMet": { "type": "object" }
+      },
+      "required": ["certificateId", "courseId", "studentEmail", "issueDate"]
+    },
+    "media_assets": {
+      "title": "Media Assets",
+      "description": "Uploaded optimized logos, favicons, banners, and documents metadata.",
+      "type": "object",
+      "properties": {
+        "filename": { "type": "string" },
+        "url": { "type": "string" },
+        "folder": { "type": "string" },
+        "mimeType": { "type": "string" },
+        "size": { "type": "number" },
+        "uploadedAt": { "type": "string" },
+        "uploadedBy": { "type": "string" },
+        "uploadedByUid": { "type": "string" }
+      },
+      "required": ["filename", "url", "uploadedAt"]
+    }
+  },
+  "firestore": {
+    "/opportunities/{opportunityId}": {
+      "schema": "opportunities",
+      "description": "Verified Nigerian opportunities"
+    },
+    "/events/{eventId}": {
+      "schema": "events",
+      "description": "Workshops and masterclasses"
+    },
+    "/services/{serviceId}": {
+      "schema": "services",
+      "description": "Core empowerment services"
+    },
+    "/learning_tracks/{trackId}": {
+      "schema": "learning_tracks",
+      "description": "Youth skill learning tracks"
+    },
+    "/faqs/{faqId}": {
+      "schema": "faqs",
+      "description": "Public FAQs"
+    },
+    "/testimonials/{testimonialId}": {
+      "schema": "testimonials",
+      "description": "Beneficiary testimonials"
+    },
+    "/partnerships/{partnerId}": {
+      "schema": "partnerships",
+      "description": "Institutional partners"
+    },
+    "/site_settings/{settingId}": {
+      "schema": "site_settings",
+      "description": "Global website configuration"
+    },
+    "/media_assets/{mediaId}": {
+      "schema": "media_assets",
+      "description": "Media uploads metadata"
+    },
+    "/enquiries/{enquiryId}": {
+      "schema": "enquiries",
+      "description": "Public inquiries and messages"
+    },
+    "/newsletter_subscribers/{subscriberId}": {
+      "schema": "newsletter_subscribers",
+      "description": "Subscribers list"
+    },
+    "/admin_activity_logs/{logId}": {
+      "schema": "admin_activity_logs",
+      "description": "Administrative audit trail"
+    },
+    "/admins/{adminId}": {
+      "schema": "admins",
+      "description": "Admin authorization records"
+    },
+    "/users/{userId}": {
+      "schema": "users",
+      "description": "User accounts directory"
+    },
+    "/academy_courses/{courseId}": {
+      "schema": "academy_courses",
+      "description": "Tech Academy course catalog"
+    },
+    "/academy_applications/{applicationId}": {
+      "schema": "academy_applications",
+      "description": "Tech Academy applications"
+    },
+    "/academy_enrollments/{enrollmentId}": {
+      "schema": "academy_enrollments",
+      "description": "Student enrollments and progress"
+    },
+    "/academy_schedules/{scheduleId}": {
+      "schema": "academy_schedules",
+      "description": "Cohort schedule sessions"
+    },
+    "/academy_materials/{materialId}": {
+      "schema": "academy_materials",
+      "description": "Learning materials"
+    },
+    "/academy_attendance/{attendanceId}": {
+      "schema": "academy_attendance",
+      "description": "Class attendance records"
+    },
+    "/academy_assignments/{assignmentId}": {
+      "schema": "academy_assignments",
+      "description": "Cohort assignments"
+    },
+    "/academy_announcements/{announcementId}": {
+      "schema": "academy_announcements",
+      "description": "Cohort broadcast announcements"
+    },
+    "/academy_certificates/{certificateId}": {
+      "schema": "academy_certificates",
+      "description": "Graduation certificates"
+    }
+  }
+}
