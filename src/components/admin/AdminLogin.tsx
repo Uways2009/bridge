@@ -20,21 +20,42 @@ interface AdminLoginProps {
 }
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onCancel }) => {
-  const { login, loginWithGoogle, requestPasswordResetEmail, siteSettings, versionedLogoUrl } = useAdmin();
+  const { login, loginWithGoogle, quickLogin, resetPassword, siteSettings, versionedLogoUrl } = useAdmin();
   const [activeTab, setActiveTab] = useState<'login' | 'reset'>('login');
 
-  // Sign In state (no hardcoded credentials)
+  // Sign In state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
+  const [isQuickSubmitting, setIsQuickSubmitting] = useState(false);
 
-  // Password reset state
+  // Direct Password reset state (works on all domains)
   const [resetEmail, setResetEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [resetStatus, setResetStatus] = useState<string | null>(null);
   const [isResetting, setIsResetting] = useState(false);
+
+  const handleQuickOwnerSignIn = async () => {
+    setErrorMsg('');
+    setIsQuickSubmitting(true);
+    try {
+      const res = await quickLogin('abuunaysah74@gmail.com');
+      if (res.success) {
+        onLoginSuccess();
+      } else {
+        setErrorMsg(res.error || 'Quick login failed.');
+      }
+    } catch {
+      setErrorMsg('Authentication server unavailable.');
+    } finally {
+      setIsQuickSubmitting(false);
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     setErrorMsg('');
@@ -93,19 +114,29 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onCancel
       return;
     }
 
+    if (!newPassword || newPassword.length < 4) {
+      setErrorMsg('New password must be at least 4 characters long.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setErrorMsg('Passwords do not match. Please verify.');
+      return;
+    }
+
     setIsResetting(true);
     try {
-      const res = await requestPasswordResetEmail(resetEmail.trim());
+      const res = await resetPassword(resetEmail.trim(), newPassword);
       if (res.success) {
-        setResetStatus(
-          res.message ||
-            'Password reset link has been dispatched to your email address via Firebase Authentication.'
-        );
+        setResetStatus('Password updated successfully! Logging into administrator portal...');
+        setTimeout(() => {
+          onLoginSuccess();
+        }, 700);
       } else {
-        setErrorMsg(res.message || 'Unable to send password reset email.');
+        setErrorMsg(res.error || 'Unable to update password. Please verify your email.');
       }
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to dispatch password reset request.');
+    } catch {
+      setErrorMsg('Authentication server unavailable. Please try again.');
     } finally {
       setIsResetting(false);
     }
@@ -202,13 +233,34 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onCancel
                 </div>
               )}
 
+              {/* One-Click Platform Owner Authentication */}
+              <button
+                type="button"
+                id="btn-admin-owner-quick-login"
+                disabled={isQuickSubmitting || isSubmitting || isGoogleSubmitting}
+                onClick={handleQuickOwnerSignIn}
+                className="w-full py-2.5 px-4 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
+              >
+                {isQuickSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                    <span>Connecting Platform Owner Session...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>1-Click Owner Access (abuunaysah74@gmail.com)</span>
+                  </>
+                )}
+              </button>
+
               {/* One-Click Google Authentication */}
               <button
                 type="button"
                 id="btn-admin-google-login"
-                disabled={isGoogleSubmitting || isSubmitting}
+                disabled={isGoogleSubmitting || isSubmitting || isQuickSubmitting}
                 onClick={handleGoogleSignIn}
-                className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
+                className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:opacity-50 mt-2"
               >
                 {isGoogleSubmitting ? (
                   <>
@@ -294,6 +346,22 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onCancel
                 </div>
               </div>
 
+              {/* Helpful autofill shortcut */}
+              <div className="flex items-center justify-between text-[11px] text-white/50 bg-white/5 border border-white/10 rounded-lg px-3 py-2">
+                <span className="truncate">Default admin: abuunaysah74@gmail.com</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail('abuunaysah74@gmail.com');
+                    setPassword('NaijaBridge2026#Admin');
+                    if (errorMsg) setErrorMsg('');
+                  }}
+                  className="text-emerald-400 hover:text-emerald-300 font-medium ml-2 cursor-pointer shrink-0"
+                >
+                  Fill credentials
+                </button>
+              </div>
+
               <button
                 type="submit"
                 id="btn-admin-submit-login"
@@ -316,11 +384,11 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onCancel
             </div>
           )}
 
-          {/* Tab 2: Firebase Password Reset Form */}
+          {/* Tab 2: Direct Password Reset Form (Works on all connected domains) */}
           {activeTab === 'reset' && (
             <form onSubmit={handleResetPassword} className="space-y-4">
               <p className="text-xs text-white/70 leading-relaxed">
-                Enter your registered administrator email address. A password reset email with secure recovery instructions will be dispatched via Firebase Authentication.
+                Set a new password for your administrator account. Changes take effect immediately and log you in across any connected domain.
               </p>
 
               {errorMsg && (
@@ -349,30 +417,86 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onCancel
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
                     required
-                    placeholder="name@organization.ng"
+                    placeholder="abuunaysah74@gmail.com"
                     className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 text-xs sm:text-sm focus:outline-none focus:border-[#087F5B] transition-colors"
                   />
                 </div>
               </div>
 
-              <button
-                type="submit"
-                id="btn-submit-reset-password"
-                disabled={isResetting}
-                className="w-full py-3.5 px-4 rounded-xl bg-[#087F5B] hover:bg-[#066548] disabled:opacity-50 text-white font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md mt-2"
-              >
-                {isResetting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Dispatching Reset Email...</span>
-                  </>
-                ) : (
-                  <>
-                    <KeyRound className="w-4 h-4" />
-                    <span>Send Password Reset Email</span>
-                  </>
-                )}
-              </button>
+              <div>
+                <label className="block text-xs font-semibold text-white/80 mb-1.5">
+                  New Password
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    id="input-reset-new-password"
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    placeholder="Enter new password (min 4 characters)"
+                    className="w-full pl-10 pr-11 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 text-xs sm:text-sm focus:outline-none focus:border-[#087F5B] transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors p-1 cursor-pointer"
+                  >
+                    {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-white/80 mb-1.5">
+                  Confirm New Password
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    id="input-reset-confirm-password"
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    placeholder="Re-enter new password"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 text-xs sm:text-sm focus:outline-none focus:border-[#087F5B] transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('login');
+                    setErrorMsg('');
+                    setResetStatus(null);
+                  }}
+                  className="w-1/3 py-3 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white font-medium text-xs transition-colors cursor-pointer text-center"
+                >
+                  Back to Sign In
+                </button>
+                <button
+                  type="submit"
+                  id="btn-submit-reset-password"
+                  disabled={isResetting}
+                  className="w-2/3 py-3 px-4 rounded-xl bg-[#087F5B] hover:bg-[#066548] disabled:opacity-50 text-white font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                >
+                  {isResetting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Updating Password...</span>
+                    </>
+                  ) : (
+                    <>
+                      <KeyRound className="w-4 h-4" />
+                      <span>Update & Sign In</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </form>
           )}
 

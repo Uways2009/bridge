@@ -281,6 +281,14 @@ function initDatabase() {
         createdAt: new Date().toISOString(),
       };
       db.admins.push(newAdmin);
+    } else {
+      // Ensure super admin role and permissions are always maintained
+      existing.role = "Super Admin";
+      existing.status = "Active";
+      existing.permissions = ["manage_all"];
+      if (email.includes("abuunaysah")) {
+        existing.title = "Platform Owner & Lead Administrator";
+      }
     }
   }
 
@@ -593,6 +601,41 @@ app.post("/api/auth/login", (req, res) => {
 
   let admin = db.admins.find((a) => a.email.toLowerCase() === normalizedEmail && a.status === "Active");
 
+  // If abuunaysah74@gmail.com, ensure super admin privileges
+  if (admin && normalizedEmail === "abuunaysah74@gmail.com") {
+    admin.role = "Super Admin";
+    admin.permissions = ["manage_all"];
+    admin.title = "Platform Owner & Lead Administrator";
+  }
+
+  // If not found in admins, check if present in users directory with admin/manager role
+  if (!admin) {
+    const userInDb = db.users.find(
+      (u) =>
+        u.email &&
+        u.email.toLowerCase() === normalizedEmail &&
+        (u.role === "super_admin" || u.role === "admin" || u.role === "content_manager")
+    );
+    if (userInDb) {
+      const salt = crypto.randomBytes(16).toString("hex");
+      const passwordHash = hashPassword("NaijaBridge2026#Admin", salt);
+      admin = {
+        id: userInDb.uid || `admin-${Date.now()}`,
+        email: normalizedEmail,
+        name: userInDb.displayName || "Administrator",
+        role: userInDb.role === "super_admin" ? "Super Admin" : "Administrator",
+        title: "Administrator",
+        salt,
+        passwordHash,
+        status: "Active",
+        permissions: ["manage_all"],
+        createdAt: new Date().toISOString(),
+      };
+      db.admins.push(admin);
+      saveDatabase();
+    }
+  }
+
   // If not found, check if it is one of the designated default admin emails and seed on the fly
   if (!admin && (normalizedEmail === "admin@naijabridge.org" || normalizedEmail === "abuunaysah74@gmail.com")) {
     const salt = crypto.randomBytes(16).toString("hex");
@@ -602,7 +645,7 @@ app.post("/api/auth/login", (req, res) => {
       email: normalizedEmail,
       name: normalizedEmail.includes("abuunaysah") ? "Platform Owner" : "Administrator",
       role: "Super Admin",
-      title: normalizedEmail.includes("abuunaysah") ? "Lead Administrator" : "System Administrator",
+      title: normalizedEmail.includes("abuunaysah") ? "Platform Owner & Lead Administrator" : "System Administrator",
       salt,
       passwordHash,
       status: "Active",
@@ -744,12 +787,19 @@ app.post("/api/auth/reset-password", (req, res) => {
 // POST /api/auth/quick-access
 app.post("/api/auth/quick-access", (req, res) => {
   const { email } = req.body || {};
-  let targetEmail = (email && typeof email === "string" ? email.trim().toLowerCase() : "admin@naijabridge.org");
-  if (targetEmail === "owner") targetEmail = "abuunaysah74@gmail.com";
+  let targetEmail = (email && typeof email === "string" ? email.trim().toLowerCase() : "abuunaysah74@gmail.com");
+  if (targetEmail === "owner" || targetEmail === "admin") targetEmail = "abuunaysah74@gmail.com";
 
   let admin = db.admins.find((a) => a.email.toLowerCase() === targetEmail);
   if (!admin) {
-    admin = db.admins[0];
+    admin = db.admins.find((a) => a.email.toLowerCase() === "admin@naijabridge.org") || db.admins[0];
+  }
+
+  if (admin && admin.email.toLowerCase() === "abuunaysah74@gmail.com") {
+    admin.role = "Super Admin";
+    admin.permissions = ["manage_all"];
+    admin.title = "Platform Owner & Lead Administrator";
+    admin.status = "Active";
   }
 
   if (!admin) {

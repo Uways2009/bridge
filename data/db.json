@@ -19,8 +19,8 @@
       "id": "admin-owner",
       "email": "abuunaysah74@gmail.com",
       "name": "Platform Owner",
-      "role": "Content Manager",
-      "title": "Content Manager",
+      "role": "Super Admin",
+      "title": "Platform Owner & Lead Administrator",
       "salt": "59820072130f982434fe2acd2d4c5430",
       "passwordHash": "21e66e1cf75999e93ca5e26a0c2d68042c585718e6525d0aa96d3b4a3bd643dd635466f20899cd768f929fe153ac6e4c131f135187234f4ade6402f1df48b4e7",
       "status": "Active",
@@ -43,7 +43,7 @@
         "manage_all"
       ],
       "createdAt": "2026-09-11T07:53:23.028Z",
-      "lastLogin": "2026-09-12T07:16:15.358Z"
+      "lastLogin": "2026-09-15T10:56:18.559Z"
     }
   ],
   "opportunities": [],
@@ -51,6 +51,62 @@
   "inquiries": [],
   "subscribers": [],
   "activity_logs": [
+    {
+      "id": "log-1789469778560-16",
+      "adminName": "Administrator",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-15T10:56:18.560Z"
+    },
+    {
+      "id": "log-1789469686775-561",
+      "adminName": "Administrator",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-15T10:54:46.775Z"
+    },
+    {
+      "id": "log-1789465412438-852",
+      "adminName": "Administrator",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-15T09:43:32.439Z"
+    },
+    {
+      "id": "log-1789465371332-638",
+      "adminName": "Administrator",
+      "action": "Updated Support Service",
+      "category": "CMS",
+      "details": "Updated service \"Starter Website Setup for Small Businesses\"",
+      "timestamp": "2026-09-15T09:42:51.332Z"
+    },
+    {
+      "id": "log-1789465329075-857",
+      "adminName": "Administrator",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-15T09:42:09.075Z"
+    },
+    {
+      "id": "log-1789465299238-126",
+      "adminName": "Administrator",
+      "action": "Updated Support Service",
+      "category": "CMS",
+      "details": "Updated service \"CV & Resume Modernization\"",
+      "timestamp": "2026-09-15T09:41:39.238Z"
+    },
+    {
+      "id": "log-1789465232520-24",
+      "adminName": "Administrator",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-15T09:40:32.520Z"
+    },
     {
       "id": "log-1789197375359-856",
       "adminName": "Administrator",
@@ -318,13 +374,13 @@
       "uid": "admin-owner",
       "displayName": "Platform Owner",
       "email": "abuunaysah74@gmail.com",
-      "role": "content_manager",
+      "role": "super_admin",
       "accountStatus": "active",
       "createdAt": "2026-09-10T21:01:05.365Z",
       "updatedAt": "2026-09-12T07:08:19.198Z",
       "lastLoginAt": "2026-09-11T07:55:08.803Z",
       "createdBy": "System Initialization",
-      "requiresPasswordChange": true,
+      "requiresPasswordChange": false,
       "updatedBy": "Administrator"
     },
     {
@@ -359,5 +415,39 @@
   "academy_assignments": [],
   "academy_announcements": [],
   "academy_certificates": [],
-  "faqs": []
+  "faqs": [],
+  "services": [
+    {
+      "id": "srv-cv",
+      "title": "CV & Resume Modernization",
+      "createdAt": "2026-09-15T09:41:39.237Z",
+      "status": "published",
+      "tagline": "Transform your CV for Nigerian & international recruiters",
+      "category": "Career Support",
+      "isFree": false,
+      "priceNaira": 5000,
+      "deliveryTime": "48 to 72 hours",
+      "description": "A thorough, line-by-line review and rewrite of your curriculum vitae. We restructure your experience around measurable impact, optimize for Applicant Tracking Systems (ATS), and remove outdated conventions.",
+      "features": [],
+      "ctaText": "Request Service",
+      "updatedAt": "2026-09-15T09:41:39.238Z",
+      "updatedBy": "Administrator"
+    },
+    {
+      "id": "srv-website",
+      "title": "Starter Website Setup for Small Businesses",
+      "createdAt": "2026-09-15T09:42:51.332Z",
+      "status": "published",
+      "tagline": "Establish your professional online footprint in Nigeria",
+      "category": "Career Support",
+      "isFree": false,
+      "priceNaira": 80000,
+      "deliveryTime": "7 to 10 business days",
+      "description": "We set up a responsive, fast-loading landing page or brochure website for your business with integrated WhatsApp click-to-chat, bank payment instructions, and Google Maps listing.",
+      "features": [],
+      "ctaText": "Request Service",
+      "updatedAt": "2026-09-15T09:42:51.332Z",
+      "updatedBy": "Administrator"
+    }
+  ]
 }
