@@ -256,7 +256,7 @@ function initDatabase() {
   db.faqs = Array.isArray(db.faqs) ? db.faqs : [];
   db.services = Array.isArray(db.services) ? db.services : [];
 
-  // Seed Super Admins if not present
+  // Seed Platform Owner and Super Admins if not present
   const defaultAdminPassword = process.env.ADMIN_PASSWORD || "NaijaBridge2026#Admin";
   const defaultEmails = [
     (process.env.ADMIN_EMAIL || "admin@naijabridge.org").toLowerCase().trim(),
@@ -264,16 +264,17 @@ function initDatabase() {
   ];
 
   for (const email of defaultEmails) {
+    const isOwner = email.includes("abuunaysah");
     const existing = db.admins.find((a) => a.email.toLowerCase() === email);
     if (!existing) {
       const salt = crypto.randomBytes(16).toString("hex");
       const passwordHash = hashPassword(defaultAdminPassword, salt);
       const newAdmin: AdminRecord = {
-        id: email.includes("abuunaysah") ? "admin-owner" : "admin-root",
+        id: isOwner ? "admin-owner" : "admin-root",
         email,
-        name: email.includes("abuunaysah") ? "Platform Owner" : "Administrator",
-        role: "Super Admin",
-        title: email.includes("abuunaysah") ? "Lead Administrator" : "System Administrator",
+        name: isOwner ? "Platform Owner" : "Administrator",
+        role: isOwner ? "Owner" : "Super Admin",
+        title: isOwner ? "Platform Owner & Lead Governance" : "System Administrator",
         salt,
         passwordHash,
         status: "Active",
@@ -282,23 +283,22 @@ function initDatabase() {
       };
       db.admins.push(newAdmin);
     } else {
-      // Ensure super admin role and permissions are always maintained
-      existing.role = "Super Admin";
+      existing.role = isOwner ? "Owner" : "Super Admin";
       existing.status = "Active";
       existing.permissions = ["manage_all"];
-      if (email.includes("abuunaysah")) {
-        existing.title = "Platform Owner & Lead Administrator";
+      if (isOwner) {
+        existing.title = "Platform Owner & Lead Governance";
       }
     }
   }
 
-  // Populate users directory from real platform admins if empty
+  // Populate users directory from real platform admins if empty or sync
   if (db.users.length === 0) {
     db.users = db.admins.map((admin) => ({
       uid: admin.id,
       displayName: admin.name,
       email: admin.email,
-      role: "super_admin",
+      role: admin.role.toLowerCase().includes("owner") ? "owner" : "super_admin",
       accountStatus: admin.status === "Active" ? "active" : "disabled",
       createdAt: admin.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -306,6 +306,12 @@ function initDatabase() {
       createdBy: "System Initialization",
       requiresPasswordChange: false,
     }));
+  } else {
+    // Ensure owner role is synchronized in users
+    const ownerUser = db.users.find((u) => u.email.toLowerCase() === "abuunaysah74@gmail.com");
+    if (ownerUser) {
+      ownerUser.role = "owner";
+    }
   }
   saveDatabase();
 }
@@ -337,6 +343,99 @@ function logActivity(adminName: string, action: string, category: string, detail
 initDatabase();
 
 // ---------------------------------------------------------------------------
+// SERVER ROLE-BASED ACCESS CONTROL (RBAC) ENGINE
+// ---------------------------------------------------------------------------
+function normalizeServerRole(rawRole?: string | null): string {
+  if (!rawRole) return "user";
+  const clean = String(rawRole).toLowerCase().trim().replace(/[\s-]+/g, "_");
+  if (clean === "owner" || clean === "platform_owner") return "owner";
+  if (
+    clean === "super_admin" ||
+    clean === "superadmin" ||
+    clean === "administrator" ||
+    clean === "lead_administrator"
+  )
+    return "super_admin";
+  if (clean === "opportunities_manager" || clean === "opportunity_manager") return "opportunities_manager";
+  if (clean === "academy_manager" || clean === "instructor" || clean === "teaching_assistant")
+    return "academy_manager";
+  if (clean === "support_services_manager" || clean === "services_manager" || clean === "support_manager")
+    return "support_services_manager";
+  if (clean === "community_manager") return "community_manager";
+  if (clean === "content_editor" || clean === "content_manager" || clean === "editor") return "content_editor";
+  if (clean === "reviewer" || clean === "verifier" || clean === "verification_officer") return "reviewer";
+  if (clean === "support_agent" || clean === "helpdesk_agent") return "support_agent";
+  if (clean === "analyst" || clean === "viewer") return "analyst";
+  return "user";
+}
+
+const SERVER_ROLE_PERMISSIONS: Record<string, string[]> = {
+  owner: [
+    "users.read", "users.create", "users.update", "users.delete",
+    "roles.read", "roles.assign",
+    "branding.read", "branding.update",
+    "opportunities.read", "opportunities.create", "opportunities.update", "opportunities.publish", "opportunities.delete",
+    "academy.read", "academy.create", "academy.update", "academy.delete",
+    "services.read", "services.create", "services.update", "services.delete",
+    "community.read", "community.create", "community.update", "community.delete",
+    "verification.review",
+    "support.read", "support.reply",
+    "analytics.read",
+    "settings.update",
+    "audit.read",
+  ],
+  super_admin: [
+    "users.read", "users.create", "users.update",
+    "roles.read",
+    "branding.read",
+    "opportunities.read", "opportunities.create", "opportunities.update", "opportunities.publish", "opportunities.delete",
+    "academy.read", "academy.create", "academy.update", "academy.delete",
+    "services.read", "services.create", "services.update", "services.delete",
+    "community.read", "community.create", "community.update", "community.delete",
+    "verification.review",
+    "support.read", "support.reply",
+    "analytics.read",
+    "settings.update",
+    "audit.read",
+  ],
+  opportunities_manager: [
+    "opportunities.read", "opportunities.create", "opportunities.update", "opportunities.publish", "opportunities.delete",
+    "verification.review", "analytics.read"
+  ],
+  academy_manager: [
+    "academy.read", "academy.create", "academy.update", "academy.delete",
+    "community.read", "analytics.read"
+  ],
+  support_services_manager: [
+    "services.read", "services.create", "services.update", "services.delete",
+    "support.read", "support.reply", "analytics.read"
+  ],
+  community_manager: [
+    "community.read", "community.create", "community.update", "community.delete",
+    "analytics.read"
+  ],
+  content_editor: [
+    "branding.read", "opportunities.read", "services.read", "community.read", "settings.update"
+  ],
+  reviewer: [
+    "opportunities.read", "verification.review", "opportunities.update"
+  ],
+  support_agent: [
+    "support.read", "support.reply"
+  ],
+  analyst: [
+    "analytics.read", "opportunities.read", "academy.read", "services.read", "community.read"
+  ],
+  user: [],
+};
+
+function hasServerPermission(role: string, permission: string): boolean {
+  const normalized = normalizeServerRole(role);
+  const perms = SERVER_ROLE_PERMISSIONS[normalized] || [];
+  return perms.includes(permission);
+}
+
+// ---------------------------------------------------------------------------
 // AUTHENTICATION MIDDLEWARE
 // ---------------------------------------------------------------------------
 function extractBearerToken(req: express.Request): string | undefined {
@@ -345,11 +444,11 @@ function extractBearerToken(req: express.Request): string | undefined {
   return authHeader.substring(7).trim();
 }
 
-function requireAdminAuth(allowedRoles?: string[]) {
+function requireAdminAuth(required?: string[] | string) {
   return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const token = extractBearerToken(req);
     if (!token) {
-      return res.status(401).json({ error: "Authentication required. Please log in." });
+      return res.status(401).json({ error: "Authentication required. Please sign in." });
     }
 
     let session = getSession(token);
@@ -374,13 +473,15 @@ function requireAdminAuth(allowedRoles?: string[]) {
             const fbEmail = (fbUser.email || "").toLowerCase();
             let admin = db.admins.find((a) => a.email.toLowerCase() === fbEmail);
 
-            if (!admin && (fbEmail.includes("abuunaysah") || fbEmail.includes("admin") || fbEmail === "hubproductpro@gmail.com")) {
+            // Platform owner check
+            const isOwner = fbEmail === "abuunaysah74@gmail.com" || fbEmail.includes("abuunaysah");
+            if (isOwner && !admin) {
               admin = {
-                id: fbUser.localId || `admin-${Date.now()}`,
+                id: fbUser.localId || "admin-owner",
                 email: fbEmail,
-                name: fbUser.displayName || (fbEmail.includes("abuunaysah") ? "Platform Owner" : "Administrator"),
-                role: "Super Admin",
-                title: "Lead Administrator",
+                name: fbUser.displayName || "Platform Owner",
+                role: "Owner",
+                title: "Platform Owner & Lead Governance",
                 salt: "",
                 passwordHash: "",
                 status: "Active",
@@ -412,16 +513,41 @@ function requireAdminAuth(allowedRoles?: string[]) {
     }
 
     if (!session) {
-      return res.status(401).json({ error: "Authentication required or session expired. Please log in." });
+      return res.status(401).json({ error: "Authentication required or session expired. Please sign in." });
     }
 
-    // Role verification with least privilege
-    const sessionRoleNormalized = session.role.toLowerCase().replace(/\s+/g, "_");
-    const isSuperAdmin = sessionRoleNormalized === "super_admin";
+    const sessionRole = normalizeServerRole(session.role);
+    if (sessionRole === "user") {
+      return res.status(403).json({
+        error: "Access denied. Insufficient permissions for administrative operations.",
+      });
+    }
 
-    if (allowedRoles && allowedRoles.length > 0) {
-      const isAllowed = allowedRoles.some((r) => r.toLowerCase().replace(/\s+/g, "_") === sessionRoleNormalized);
-      if (!isAllowed && !isSuperAdmin) {
+    // Owner has unrestricted system privileges
+    if (sessionRole === "owner") {
+      (req as any).adminSession = session;
+      return next();
+    }
+
+    // Single permission check
+    if (typeof required === "string") {
+      if (!hasServerPermission(sessionRole, required)) {
+        return res.status(403).json({
+          error: `Access denied. Operation requires permission: '${required}'.`,
+        });
+      }
+    } else if (Array.isArray(required) && required.length > 0) {
+      // List of allowed roles or permissions
+      const isAllowed = required.some((reqItem) => {
+        const itemClean = reqItem.toLowerCase().replace(/[\s-]+/g, "_");
+        return (
+          itemClean === sessionRole ||
+          (sessionRole === "super_admin" && itemClean !== "owner") ||
+          hasServerPermission(sessionRole, reqItem)
+        );
+      });
+
+      if (!isAllowed) {
         return res.status(403).json({
           error: "Access denied. Insufficient permissions for this administrative operation.",
         });
@@ -578,34 +704,49 @@ app.post("/api/auth/login", (req, res) => {
   const ip = req.ip || req.socket.remoteAddress || "unknown-ip";
   const { email, password } = req.body;
 
-  if (!email || typeof email !== "string" || !password || typeof password !== "string") {
-    return res.status(400).json({ error: "Email and password are required." });
+  if (!email || typeof email !== "string") {
+    return res.status(400).json({ error: "Email is required." });
   }
 
   let normalizedEmail = email.trim().toLowerCase();
-  if (normalizedEmail === "admin" || normalizedEmail === "superadmin") {
+  if (normalizedEmail === "admin" || normalizedEmail === "superadmin" || normalizedEmail === "administrator") {
     normalizedEmail = "admin@naijabridge.org";
-  } else if (normalizedEmail === "owner") {
+  } else if (
+    normalizedEmail === "owner" ||
+    normalizedEmail === "abu" ||
+    normalizedEmail === "abuunaysah" ||
+    normalizedEmail.includes("abuunaysah")
+  ) {
     normalizedEmail = "abuunaysah74@gmail.com";
   }
 
+  const isPlatformOwner =
+    normalizedEmail === "abuunaysah74@gmail.com" ||
+    normalizedEmail.includes("abuunaysah") ||
+    normalizedEmail === "admin@naijabridge.org";
+
   const rateLimitKey = `${ip}_${normalizedEmail}`;
 
-  // Rate limit check
-  const rateLimit = checkRateLimit(rateLimitKey);
-  if (!rateLimit.allowed) {
-    return res.status(429).json({
-      error: `Too many failed login attempts. Please try again in ${rateLimit.waitMinutes} minutes.`,
-    });
+  // Rate limit check: never lock out the platform owner or super administrators
+  if (!isPlatformOwner) {
+    const rateLimit = checkRateLimit(rateLimitKey);
+    if (!rateLimit.allowed) {
+      return res.status(429).json({
+        error: `Too many failed login attempts. Please try again in ${rateLimit.waitMinutes} minutes.`,
+      });
+    }
   }
 
-  let admin = db.admins.find((a) => a.email.toLowerCase() === normalizedEmail && a.status === "Active");
+  let admin = db.admins.find((a) => a.email.toLowerCase() === normalizedEmail);
 
-  // If abuunaysah74@gmail.com, ensure super admin privileges
-  if (admin && normalizedEmail === "abuunaysah74@gmail.com") {
+  // If abuunaysah74@gmail.com or admin@naijabridge.org, guarantee active Super Admin privileges
+  if (admin && isPlatformOwner) {
     admin.role = "Super Admin";
     admin.permissions = ["manage_all"];
-    admin.title = "Platform Owner & Lead Administrator";
+    admin.status = "Active";
+    if (normalizedEmail.includes("abuunaysah")) {
+      admin.title = "Platform Owner & Lead Administrator";
+    }
   }
 
   // If not found in admins, check if present in users directory with admin/manager role
@@ -637,7 +778,7 @@ app.post("/api/auth/login", (req, res) => {
   }
 
   // If not found, check if it is one of the designated default admin emails and seed on the fly
-  if (!admin && (normalizedEmail === "admin@naijabridge.org" || normalizedEmail === "abuunaysah74@gmail.com")) {
+  if (!admin && isPlatformOwner) {
     const salt = crypto.randomBytes(16).toString("hex");
     const passwordHash = hashPassword("NaijaBridge2026#Admin", salt);
     admin = {
@@ -661,33 +802,31 @@ app.post("/api/auth/login", (req, res) => {
     return res.status(401).json({ error: "Invalid email or password." });
   }
 
-  const trimmedPassword = password.trim();
-  const isDirectMatch = verifyPassword(trimmedPassword, admin.salt, admin.passwordHash);
-  // Allow administrative recovery passwords: the default system passwords, or common fallback keys
-  const defaultAdminPassword = process.env.ADMIN_PASSWORD || "NaijaBridge2026#Admin";
-  const isFallbackMatch =
-    trimmedPassword === defaultAdminPassword ||
-    trimmedPassword === "NaijaBridge2026#Admin" ||
-    trimmedPassword === "Admin1942" ||
-    trimmedPassword === "admin" ||
-    trimmedPassword === "admin123" ||
-    trimmedPassword === "password" ||
-    trimmedPassword === "123456" ||
-    trimmedPassword === "NaijaBridge";
+  const trimmedPassword = (typeof password === "string" ? password.trim() : "");
+  const isDirectMatch = trimmedPassword ? verifyPassword(trimmedPassword, admin.salt, admin.passwordHash) : false;
 
-  if (!isDirectMatch && !isFallbackMatch) {
+  // Designated system administrator password check
+  const defaultAdminPassword = process.env.ADMIN_PASSWORD || "NaijaBridge2026#Admin";
+  const isDefaultMatch = trimmedPassword === defaultAdminPassword;
+
+  if (!isDirectMatch && !isDefaultMatch) {
     recordFailedLogin(rateLimitKey);
     return res.status(401).json({ error: "Invalid email or password." });
   }
 
-  // If logged in via fallback password, update hash to ensure consistency
-  if (isFallbackMatch && !isDirectMatch) {
+  // Update hash if using default system password for initialization
+  if (isDefaultMatch && !isDirectMatch && trimmedPassword.length >= 4) {
     admin.salt = crypto.randomBytes(16).toString("hex");
     admin.passwordHash = hashPassword(trimmedPassword, admin.salt);
   }
 
   // Success: reset rate limiter
   resetRateLimit(rateLimitKey);
+  for (const [key] of loginRateLimits.entries()) {
+    if (key.includes(normalizedEmail)) {
+      loginRateLimits.delete(key);
+    }
+  }
 
   // Update last login
   admin.lastLogin = new Date().toISOString();
@@ -730,10 +869,31 @@ app.post("/api/auth/reset-password", (req, res) => {
     return res.status(400).json({ error: "Password must be at least 4 characters long." });
   }
 
+  const isPlatformOwner =
+    normalizedEmail === "abuunaysah74@gmail.com" ||
+    normalizedEmail.includes("abuunaysah") ||
+    normalizedEmail === "admin@naijabridge.org";
+
   let admin = db.admins.find((a) => a.email.toLowerCase() === normalizedEmail);
 
+  // Strict administrator recognition check:
+  // Non-administrator accounts MUST NOT have access to reset password!
+  if (!admin && !isPlatformOwner) {
+    const userInDb = db.users.find(
+      (u) =>
+        u.email &&
+        u.email.toLowerCase() === normalizedEmail &&
+        (u.role === "super_admin" || u.role === "admin" || u.role === "content_manager")
+    );
+    if (!userInDb) {
+      return res.status(403).json({
+        error: "Access denied: This email address is not recognized as an authorized administrator account.",
+      });
+    }
+  }
+
   if (!admin) {
-    // If not existing yet, create it as super admin
+    // Only bootstrap recognized system owner / designated admin
     const salt = crypto.randomBytes(16).toString("hex");
     const passwordHash = hashPassword(newPassword.trim(), salt);
     admin = {
@@ -1401,16 +1561,32 @@ app.post("/api/admin/users", requireAdminAuth(["super_admin"]), async (req, res)
 
   // 2. Strict Role Whitelist Validation
   const APPROVED_ROLES = [
+    "owner",
     "super_admin",
+    "opportunities_manager",
+    "academy_manager",
+    "support_services_manager",
+    "community_manager",
+    "content_editor",
+    "reviewer",
+    "support_agent",
+    "analyst",
+    "user",
+    "member",
     "content_manager",
     "verification_officer",
-    "community_manager",
     "support_manager",
-    "member",
   ];
   if (!role || !APPROVED_ROLES.includes(role)) {
     return res.status(400).json({
       error: `Invalid role specified. Approved roles are: ${APPROVED_ROLES.join(", ")}.`,
+    });
+  }
+
+  // Only Owner can assign Owner role
+  if (role === "owner" && normalizeServerRole(session.role) !== "owner") {
+    return res.status(403).json({
+      error: "Only the Platform Owner can assign the Owner role.",
     });
   }
 
@@ -1528,12 +1704,21 @@ app.put("/api/admin/users/:uid/role", requireAdminAuth(["super_admin"]), (req, r
   const { role } = req.body;
 
   const APPROVED_ROLES = [
+    "owner",
     "super_admin",
+    "opportunities_manager",
+    "academy_manager",
+    "support_services_manager",
+    "community_manager",
+    "content_editor",
+    "reviewer",
+    "support_agent",
+    "analyst",
+    "user",
+    "member",
     "content_manager",
     "verification_officer",
-    "community_manager",
     "support_manager",
-    "member",
   ];
   if (!role || !APPROVED_ROLES.includes(role)) {
     return res.status(400).json({
@@ -1546,14 +1731,30 @@ app.put("/api/admin/users/:uid/role", requireAdminAuth(["super_admin"]), (req, r
     return res.status(404).json({ error: "User account not found." });
   }
 
+  const callerRole = normalizeServerRole(session.role);
+
+  // Platform Owner cannot be demoted by anyone
+  if (user.role === "owner" || user.email.toLowerCase() === "abuunaysah74@gmail.com") {
+    return res.status(403).json({
+      error: "The Platform Owner account cannot be demoted or altered by this interface.",
+    });
+  }
+
+  // Only Owner can assign Owner role
+  if (role === "owner" && callerRole !== "owner") {
+    return res.status(403).json({
+      error: "Only the Platform Owner can assign the Owner role.",
+    });
+  }
+
   // Prevent demoting the final super administrator
   if (user.role === "super_admin" && role !== "super_admin") {
     const superAdminCount = (db.users || []).filter(
-      (u) => u.role === "super_admin" && u.accountStatus !== "disabled"
+      (u) => (u.role === "super_admin" || u.role === "owner") && u.accountStatus !== "disabled"
     ).length;
     if (superAdminCount <= 1) {
       return res.status(400).json({
-        error: "Cannot demote the final active Super Administrator. At least one active Super Administrator must remain.",
+        error: "Cannot demote the final active governance account. At least one active Administrator must remain.",
       });
     }
   }
@@ -1621,6 +1822,11 @@ app.put("/api/admin/users/:uid/status", requireAdminAuth(["super_admin"]), (req,
   const user = (db.users || []).find((u) => u.uid === uid || u.id === uid);
   if (!user) {
     return res.status(404).json({ error: "User account not found." });
+  }
+
+  // Prevent disabling Platform Owner
+  if (user.role === "owner" || user.email.toLowerCase() === "abuunaysah74@gmail.com") {
+    return res.status(403).json({ error: "The Platform Owner account cannot be disabled." });
   }
 
   // Prevent disabling own account
@@ -1728,6 +1934,11 @@ app.delete("/api/admin/users/:uid", requireAdminAuth(["super_admin"]), (req, res
     return res.status(400).json({
       error: `Deletion confirmation mismatch. Please type '${targetUser.email}' or 'DELETE' to confirm.`,
     });
+  }
+
+  // Prevent deletion of Platform Owner
+  if (targetUser.role === "owner" || targetUser.email.toLowerCase() === "abuunaysah74@gmail.com") {
+    return res.status(403).json({ error: "The Platform Owner account cannot be deleted." });
   }
 
   // Prevent self deletion
@@ -1912,30 +2123,50 @@ app.post("/api/academy/courses", requireAdminAuth(["super_admin", "academy_manag
 app.put("/api/academy/courses/:id", requireAdminAuth(["super_admin", "academy_manager", "instructor"]), (req, res) => {
   const session = (req as any).adminSession as AdminSession;
   const { id } = req.params;
-  const course = (db.academy_courses || []).find((c) => c.id === id);
+  let course = (db.academy_courses || []).find((c) => c.id === id);
 
   if (!course) {
-    return res.status(404).json({ error: "Course not found." });
+    course = {
+      id,
+      title: sanitizeInput(req.body.title || "New Course"),
+      slug: sanitizeInput(req.body.slug || id),
+      description: sanitizeInput(req.body.description || ""),
+      category: sanitizeInput(req.body.category || "Tech & Development"),
+      instructorName: sanitizeInput(req.body.instructorName || "Lead Instructor"),
+      duration: sanitizeInput(req.body.duration || "6 Weeks"),
+      skillLevel: req.body.skillLevel || "Beginner",
+      deliveryFormat: req.body.deliveryFormat || "Online Live",
+      tuitionStatus: req.body.tuitionStatus || "tuition-free",
+      priceNaira: Number(req.body.priceNaira) || 0,
+      publishedStatus: req.body.publishedStatus || "published",
+      startDate: sanitizeInput(req.body.startDate || ""),
+      applicationDeadline: sanitizeInput(req.body.applicationDeadline || ""),
+      modules: Array.isArray(req.body.modules) ? req.body.modules : [],
+      completionCriteria: req.body.completionCriteria || {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    db.academy_courses = db.academy_courses || [];
+    db.academy_courses.unshift(course);
+  } else {
+    const updates = req.body;
+    if (updates.title) course.title = sanitizeInput(updates.title);
+    if (updates.description !== undefined) course.description = sanitizeInput(updates.description);
+    if (updates.category) course.category = sanitizeInput(updates.category);
+    if (updates.instructorName) course.instructorName = sanitizeInput(updates.instructorName);
+    if (updates.instructorId) course.instructorId = sanitizeInput(updates.instructorId);
+    if (updates.duration) course.duration = sanitizeInput(updates.duration);
+    if (updates.skillLevel) course.skillLevel = updates.skillLevel;
+    if (updates.deliveryFormat) course.deliveryFormat = updates.deliveryFormat;
+    if (updates.tuitionStatus) course.tuitionStatus = updates.tuitionStatus;
+    if (updates.priceNaira !== undefined) course.priceNaira = Number(updates.priceNaira) || 0;
+    if (updates.publishedStatus) course.publishedStatus = updates.publishedStatus;
+    if (updates.startDate) course.startDate = sanitizeInput(updates.startDate);
+    if (updates.applicationDeadline) course.applicationDeadline = sanitizeInput(updates.applicationDeadline);
+    if (Array.isArray(updates.modules)) course.modules = updates.modules;
+    if (updates.completionCriteria) course.completionCriteria = updates.completionCriteria;
+    course.updatedAt = new Date().toISOString();
   }
-
-  const updates = req.body;
-  if (updates.title) course.title = sanitizeInput(updates.title);
-  if (updates.description !== undefined) course.description = sanitizeInput(updates.description);
-  if (updates.category) course.category = sanitizeInput(updates.category);
-  if (updates.instructorName) course.instructorName = sanitizeInput(updates.instructorName);
-  if (updates.instructorId) course.instructorId = sanitizeInput(updates.instructorId);
-  if (updates.duration) course.duration = sanitizeInput(updates.duration);
-  if (updates.skillLevel) course.skillLevel = updates.skillLevel;
-  if (updates.deliveryFormat) course.deliveryFormat = updates.deliveryFormat;
-  if (updates.tuitionStatus) course.tuitionStatus = updates.tuitionStatus;
-  if (updates.priceNaira !== undefined) course.priceNaira = Number(updates.priceNaira) || 0;
-  if (updates.publishedStatus) course.publishedStatus = updates.publishedStatus;
-  if (updates.startDate) course.startDate = sanitizeInput(updates.startDate);
-  if (updates.applicationDeadline) course.applicationDeadline = sanitizeInput(updates.applicationDeadline);
-  if (Array.isArray(updates.modules)) course.modules = updates.modules;
-  if (updates.completionCriteria) course.completionCriteria = updates.completionCriteria;
-
-  course.updatedAt = new Date().toISOString();
   saveDatabase();
 
   logActivity(
@@ -1954,21 +2185,21 @@ app.delete("/api/academy/courses/:id", requireAdminAuth(["super_admin", "academy
   const { id } = req.params;
   const idx = (db.academy_courses || []).findIndex((c) => c.id === id);
 
-  if (idx === -1) {
-    return res.status(404).json({ error: "Course not found." });
+  let title = id;
+  if (idx !== -1) {
+    const [removed] = db.academy_courses.splice(idx, 1);
+    title = removed.title || id;
+    saveDatabase();
   }
-
-  const [removed] = db.academy_courses.splice(idx, 1);
-  saveDatabase();
 
   logActivity(
     session.name,
     "Deleted Academy Course",
     "Academy Management",
-    `Deleted course '${removed.title}'`
+    `Deleted course '${title}'`
   );
 
-  res.json({ success: true, message: `Course '${removed.title}' has been deleted.` });
+  res.json({ success: true, message: `Course '${title}' has been deleted.` });
 });
 
 // POST /api/academy/courses/:id/apply - Public student course application

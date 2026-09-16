@@ -175,7 +175,7 @@ export const AboutPage: React.FC = () => {
                 className="bg-[#F8F7F2] p-5 rounded-2xl border border-[#E4E1D8] flex flex-col justify-between space-y-3 hover:shadow-xs transition-shadow"
               >
                 <div>
-                  {member.photoUrl ? (
+                  {member.photoUrl && member.photoUrl.trim() !== '' ? (
                     <img
                       src={member.photoUrl}
                       alt={member.name}

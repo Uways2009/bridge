@@ -301,17 +301,37 @@ export interface PartnerPlaceholder {
 // ADMINISTRATIVE & SECURITY DASHBOARD TYPES
 // ----------------------------------------------------
 
+export type { StaffRole, Permission } from './lib/permissions';
+
 export type AdminRole =
+  | 'Owner'
+  | 'owner'
   | 'Super Admin'
   | 'super_admin'
-  | 'Content Manager'
-  | 'content_manager'
-  | 'Verification Officer'
-  | 'verification_officer'
+  | 'Opportunities Manager'
+  | 'opportunities_manager'
+  | 'Academy Manager'
+  | 'academy_manager'
+  | 'Support Services Manager'
+  | 'support_services_manager'
   | 'Community Manager'
   | 'community_manager'
+  | 'Content Editor'
+  | 'content_editor'
+  | 'Reviewer'
+  | 'reviewer'
+  | 'Verification Officer'
+  | 'verification_officer'
+  | 'Support Agent'
+  | 'support_agent'
   | 'Support Manager'
-  | 'support_manager';
+  | 'support_manager'
+  | 'Analyst'
+  | 'analyst'
+  | 'viewer'
+  | 'user'
+  | 'Content Manager'
+  | 'content_manager';
 
 export interface SiteSettings {
   logoUrl?: string;
@@ -366,16 +386,24 @@ export type AdminPermission =
   | 'view_audit_logs';
 
 export type PlatformRole =
+  | 'owner'
   | 'super_admin'
+  | 'opportunities_manager'
   | 'academy_manager'
+  | 'support_services_manager'
+  | 'community_manager'
+  | 'content_editor'
+  | 'reviewer'
+  | 'support_agent'
+  | 'analyst'
   | 'instructor'
   | 'teaching_assistant'
   | 'student'
   | 'content_manager'
   | 'verification_officer'
-  | 'community_manager'
   | 'support_manager'
-  | 'member';
+  | 'member'
+  | 'user';
 
 export type UserAccountStatus = 'active' | 'disabled' | 'pending_activation';
 

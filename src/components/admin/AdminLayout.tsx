@@ -186,18 +186,23 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onReturnToPublicSite }
           {/* Logo & Platform Tag */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              {siteSettings?.logoDarkUrl || versionedLogoUrl || siteSettings?.logoUrl ? (
-                <img
-                  src={siteSettings?.logoDarkUrl || versionedLogoUrl || siteSettings?.logoUrl}
-                  alt={siteSettings?.logoAlt || 'NaijaBridge'}
-                  referrerPolicy="no-referrer"
-                  className="h-9 w-auto max-h-10 object-contain"
-                />
-              ) : (
-                <div className="w-9 h-9 rounded-xl bg-[#087F5B] flex items-center justify-center font-black text-white text-lg tracking-wider font-display shadow-md">
-                  NB
-                </div>
-              )}
+              {(() => {
+                const brandLogo = [siteSettings?.logoDarkUrl, versionedLogoUrl, siteSettings?.logoUrl].find(
+                  (u) => typeof u === 'string' && u.trim().length > 0
+                );
+                return brandLogo ? (
+                  <img
+                    src={brandLogo}
+                    alt={siteSettings?.logoAlt || 'NaijaBridge'}
+                    referrerPolicy="no-referrer"
+                    className="h-9 w-auto max-h-10 object-contain"
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-xl bg-[#087F5B] flex items-center justify-center font-black text-white text-lg tracking-wider font-display shadow-md">
+                    NB
+                  </div>
+                );
+              })()}
               <div>
                 <span className="font-display font-bold text-base tracking-tight text-white block leading-tight">
                   {siteSettings?.siteName || 'NaijaBridge'}
@@ -212,11 +217,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onReturnToPublicSite }
           {/* Quick Staff Identity */}
           {currentAdmin && (
             <div className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3">
-              <img
-                src={currentAdmin.avatar}
-                alt={currentAdmin.name}
-                className="w-9 h-9 rounded-xl object-cover ring-2 ring-[#087F5B]"
-              />
+              {currentAdmin.avatar && currentAdmin.avatar.trim() !== '' ? (
+                <img
+                  src={currentAdmin.avatar}
+                  alt={currentAdmin.name}
+                  className="w-9 h-9 rounded-xl object-cover ring-2 ring-[#087F5B]"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-xl bg-[#087F5B] text-white flex items-center justify-center font-bold text-xs font-display ring-2 ring-[#087F5B]/50 shrink-0">
+                  {currentAdmin.name?.slice(0, 2).toUpperCase() || 'AD'}
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold text-white truncate">{currentAdmin.name}</p>
                 <p className="text-[10px] text-[#087F5B] font-semibold truncate">

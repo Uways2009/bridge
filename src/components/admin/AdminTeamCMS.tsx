@@ -508,7 +508,7 @@ export const AdminTeamCMS: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-3">
-                      {m.photoUrl ? (
+                      {m.photoUrl && m.photoUrl.trim() !== '' ? (
                         <img
                           src={m.photoUrl}
                           alt={m.name}
@@ -716,7 +716,7 @@ export const AdminTeamCMS: React.FC = () => {
                   Profile Photo (Firebase Storage or URL)
                 </label>
                 <div className="flex items-center gap-3">
-                  {photoUrl ? (
+                  {photoUrl && photoUrl.trim() !== '' ? (
                     <img
                       src={photoUrl}
                       alt="Preview"

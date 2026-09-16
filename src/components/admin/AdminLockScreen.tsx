@@ -42,11 +42,17 @@ export const AdminLockScreen: React.FC = () => {
 
         {currentAdmin && (
           <div className="my-5 p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-3 text-left">
-            <img
-              src={currentAdmin.avatar}
-              alt={currentAdmin.name}
-              className="w-10 h-10 rounded-xl object-cover"
-            />
+            {currentAdmin.avatar && currentAdmin.avatar.trim() !== '' ? (
+              <img
+                src={currentAdmin.avatar}
+                alt={currentAdmin.name}
+                className="w-10 h-10 rounded-xl object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-xl bg-[#087F5B] text-white flex items-center justify-center font-bold text-sm font-display shadow-xs shrink-0">
+                {currentAdmin.name?.slice(0, 2).toUpperCase() || 'AD'}
+              </div>
+            )}
             <div className="overflow-hidden">
               <p className="text-sm font-semibold text-white truncate">{currentAdmin.name}</p>
               <p className="text-xs text-[#087F5B] font-medium">{currentAdmin.role}</p>

@@ -129,23 +129,28 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => handleNavClick('home')}
             className="flex items-center gap-3 text-left group focus:outline-none cursor-pointer"
           >
-            {versionedLogoUrl || siteSettings?.logoUrl ? (
-              <img
-                src={versionedLogoUrl || siteSettings?.logoUrl}
-                alt={siteSettings?.logoAlt || 'NaijaBridge'}
-                referrerPolicy="no-referrer"
-                className="h-10 max-h-12 w-auto object-contain transition-transform group-hover:scale-105"
-              />
-            ) : (
-              <div className="w-11 h-11 rounded-xl bg-[#0B1F33] border border-[#0F766E]/40 flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105">
-                {/* Stylized bridge arch icon */}
-                <div className="relative w-6 h-6 flex items-center justify-center">
-                  <span className="absolute bottom-1 w-5 h-1.5 bg-[#087F5B] rounded-full" />
-                  <span className="absolute top-1 w-3 h-3 rounded-full border-2 border-[#D99A28] border-b-transparent -rotate-45" />
-                  <span className="text-white font-bold text-xs tracking-tighter">NB</span>
+            {(() => {
+              const brandLogo = [versionedLogoUrl, siteSettings?.logoUrl].find(
+                (u) => typeof u === 'string' && u.trim().length > 0
+              );
+              return brandLogo ? (
+                <img
+                  src={brandLogo}
+                  alt={siteSettings?.logoAlt || 'NaijaBridge'}
+                  referrerPolicy="no-referrer"
+                  className="h-10 max-h-12 w-auto object-contain transition-transform group-hover:scale-105"
+                />
+              ) : (
+                <div className="w-11 h-11 rounded-xl bg-[#0B1F33] border border-[#0F766E]/40 flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-105">
+                  {/* Stylized bridge arch icon */}
+                  <div className="relative w-6 h-6 flex items-center justify-center">
+                    <span className="absolute bottom-1 w-5 h-1.5 bg-[#087F5B] rounded-full" />
+                    <span className="absolute top-1 w-3 h-3 rounded-full border-2 border-[#D99A28] border-b-transparent -rotate-45" />
+                    <span className="text-white font-bold text-xs tracking-tighter">NB</span>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
             <div>
               <span className="text-xl font-bold tracking-tight text-[#0B1F33] font-display flex items-center gap-1">
                 Naija<span className="text-[#087F5B]">Bridge</span>

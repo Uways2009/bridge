@@ -20,7 +20,7 @@ interface AdminLoginProps {
 }
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onCancel }) => {
-  const { login, loginWithGoogle, quickLogin, resetPassword, siteSettings, versionedLogoUrl } = useAdmin();
+  const { login, loginWithGoogle, resetPassword, siteSettings, versionedLogoUrl } = useAdmin();
   const [activeTab, setActiveTab] = useState<'login' | 'reset'>('login');
 
   // Sign In state
@@ -30,7 +30,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onCancel
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
-  const [isQuickSubmitting, setIsQuickSubmitting] = useState(false);
 
   // Direct Password reset state (works on all domains)
   const [resetEmail, setResetEmail] = useState('');
@@ -39,23 +38,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onCancel
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [resetStatus, setResetStatus] = useState<string | null>(null);
   const [isResetting, setIsResetting] = useState(false);
-
-  const handleQuickOwnerSignIn = async () => {
-    setErrorMsg('');
-    setIsQuickSubmitting(true);
-    try {
-      const res = await quickLogin('abuunaysah74@gmail.com');
-      if (res.success) {
-        onLoginSuccess();
-      } else {
-        setErrorMsg(res.error || 'Quick login failed.');
-      }
-    } catch {
-      setErrorMsg('Authentication server unavailable.');
-    } finally {
-      setIsQuickSubmitting(false);
-    }
-  };
 
   const handleGoogleSignIn = async () => {
     setErrorMsg('');
@@ -95,7 +77,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onCancel
       if (result.success) {
         onLoginSuccess();
       } else {
-        setErrorMsg(result.error || 'Invalid administrator email or password.');
+        setErrorMsg(result.error || 'Invalid administrator email or password. Please verify your credentials or use Password Reset.');
       }
     } catch {
       setErrorMsg('Authentication server unavailable. Please try again.');
@@ -168,19 +150,24 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onCancel
         <div className="bg-[#12283E] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-sm">
           {/* Brand Logo & Header */}
           <div className="text-center mb-6">
-            {versionedLogoUrl || siteSettings?.logoUrl ? (
-              <div className="mb-4 flex justify-center">
-                <img
-                  src={versionedLogoUrl || siteSettings?.logoUrl}
-                  alt={siteSettings?.logoAlt || 'NaijaBridge'}
-                  className="h-12 w-auto object-contain max-w-[200px]"
-                />
-              </div>
-            ) : (
-              <div className="w-14 h-14 rounded-2xl bg-[#087F5B]/20 border border-[#087F5B]/50 flex items-center justify-center mx-auto text-[#087F5B] mb-3.5 shadow-inner">
-                <ShieldCheck className="w-8 h-8" />
-              </div>
-            )}
+            {(() => {
+              const brandLogo = [versionedLogoUrl, siteSettings?.logoUrl].find(
+                (u) => typeof u === 'string' && u.trim().length > 0
+              );
+              return brandLogo ? (
+                <div className="mb-4 flex justify-center">
+                  <img
+                    src={brandLogo}
+                    alt={siteSettings?.logoAlt || 'NaijaBridge'}
+                    className="h-12 w-auto object-contain max-w-[200px]"
+                  />
+                </div>
+              ) : (
+                <div className="w-14 h-14 rounded-2xl bg-[#087F5B]/20 border border-[#087F5B]/50 flex items-center justify-center mx-auto text-[#087F5B] mb-3.5 shadow-inner">
+                  <ShieldCheck className="w-8 h-8" />
+                </div>
+              );
+            })()}
             <h1 className="text-2xl font-bold font-display text-white tracking-tight">
               NaijaBridge Admin Console
             </h1>
@@ -233,34 +220,13 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onCancel
                 </div>
               )}
 
-              {/* One-Click Platform Owner Authentication */}
-              <button
-                type="button"
-                id="btn-admin-owner-quick-login"
-                disabled={isQuickSubmitting || isSubmitting || isGoogleSubmitting}
-                onClick={handleQuickOwnerSignIn}
-                className="w-full py-2.5 px-4 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
-              >
-                {isQuickSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
-                    <span>Connecting Platform Owner Session...</span>
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>1-Click Owner Access (abuunaysah74@gmail.com)</span>
-                  </>
-                )}
-              </button>
-
               {/* One-Click Google Authentication */}
               <button
                 type="button"
                 id="btn-admin-google-login"
-                disabled={isGoogleSubmitting || isSubmitting || isQuickSubmitting}
+                disabled={isGoogleSubmitting || isSubmitting}
                 onClick={handleGoogleSignIn}
-                className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:opacity-50 mt-2"
+                className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
               >
                 {isGoogleSubmitting ? (
                   <>
@@ -278,7 +244,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onCancel
               <div className="relative flex items-center justify-center my-3">
                 <div className="border-t border-white/10 w-full" />
                 <span className="bg-[#12283E] px-3 text-[10px] text-white/40 uppercase tracking-wider font-mono shrink-0">
-                  Or continue with email
+                  Or sign in with administrator credentials
                 </span>
                 <div className="border-t border-white/10 w-full" />
               </div>
@@ -346,22 +312,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onCancel
                 </div>
               </div>
 
-              {/* Helpful autofill shortcut */}
-              <div className="flex items-center justify-between text-[11px] text-white/50 bg-white/5 border border-white/10 rounded-lg px-3 py-2">
-                <span className="truncate">Default admin: abuunaysah74@gmail.com</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail('abuunaysah74@gmail.com');
-                    setPassword('NaijaBridge2026#Admin');
-                    if (errorMsg) setErrorMsg('');
-                  }}
-                  className="text-emerald-400 hover:text-emerald-300 font-medium ml-2 cursor-pointer shrink-0"
-                >
-                  Fill credentials
-                </button>
-              </div>
-
               <button
                 type="submit"
                 id="btn-admin-submit-login"
@@ -417,7 +367,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess, onCancel
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
                     required
-                    placeholder="abuunaysah74@gmail.com"
+                    placeholder="admin@domain.com"
                     className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 text-xs sm:text-sm focus:outline-none focus:border-[#087F5B] transition-colors"
                   />
                 </div>

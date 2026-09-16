@@ -88,7 +88,10 @@ export const PublicAcademy: React.FC<PublicAcademyProps> = ({ onNavigateToContac
       if (res.ok) {
         const data = await res.json();
         const published = Array.isArray(data)
-          ? data.filter((c: AcademyCourse) => c.publishedStatus === 'published' || (c as any).status === 'published')
+          ? data.filter((c: AcademyCourse) => {
+              const pub = (c.publishedStatus || (c as any).status || '').toLowerCase();
+              return pub === 'published' || pub === '';
+            })
           : [];
         setCourses(published);
         setLastRefreshedAt(new Date().toLocaleTimeString());
@@ -100,7 +103,10 @@ export const PublicAcademy: React.FC<PublicAcademyProps> = ({ onNavigateToContac
         if (res.ok) {
           const data = await res.json();
           const published = Array.isArray(data)
-            ? data.filter((c: AcademyCourse) => c.publishedStatus === 'published')
+            ? data.filter((c: AcademyCourse) => {
+                const pub = (c.publishedStatus || (c as any).status || '').toLowerCase();
+                return pub === 'published' || pub === '';
+              })
             : [];
           setCourses(published);
         }
@@ -212,14 +218,33 @@ export const PublicAcademy: React.FC<PublicAcademyProps> = ({ onNavigateToContac
   };
 
   const filteredCourses = courses.filter((c) => {
-    const matchesSearch =
-      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.category.toLowerCase().includes(searchQuery.toLowerCase());
+    const title = (c.title || '').toLowerCase();
+    const desc = (c.description || '').toLowerCase();
+    const cat = (c.category || '').toLowerCase();
+    const query = searchQuery.toLowerCase().trim();
 
-    const matchesCategory = categoryFilter === 'all' || c.category === categoryFilter;
-    const matchesTuition = tuitionFilter === 'all' || c.tuitionStatus === tuitionFilter;
-    const matchesSkill = skillFilter === 'all' || c.skillLevel === skillFilter;
+    const matchesSearch =
+      !query ||
+      title.includes(query) ||
+      desc.includes(query) ||
+      cat.includes(query);
+
+    const matchesCategory =
+      categoryFilter === 'all' ||
+      (c.category && c.category.toLowerCase() === categoryFilter.toLowerCase());
+
+    const tuition = (c.tuitionStatus || '').toLowerCase();
+    const selectedTuition = tuitionFilter.toLowerCase();
+    const matchesTuition =
+      selectedTuition === 'all' ||
+      tuition === selectedTuition ||
+      (selectedTuition === 'tuition-free' && (tuition === 'free' || tuition === 'tuition-free')) ||
+      (selectedTuition === 'paid' && tuition === 'paid') ||
+      (selectedTuition === 'sponsored' && tuition === 'sponsored');
+
+    const matchesSkill =
+      skillFilter === 'all' ||
+      (c.skillLevel && c.skillLevel.toLowerCase() === skillFilter.toLowerCase());
 
     return matchesSearch && matchesCategory && matchesTuition && matchesSkill;
   });

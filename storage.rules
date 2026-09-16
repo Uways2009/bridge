@@ -1,9 +1,113 @@
 rules_version = '2';
+
 service firebase.storage {
   match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner() {
+      return isSignedIn() && (
+        request.auth.token.role == 'owner' || 
+        request.auth.token.role == 'Owner' ||
+        firestore.get(/databases/(default)/documents/roles/$(request.auth.uid)).data.role == 'owner' ||
+        firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data.role == 'owner'
+      );
+    }
+
+    function isSuperAdmin() {
+      return isOwner() || (isSignedIn() && (
+        request.auth.token.role == 'super_admin' || 
+        request.auth.token.role == 'Super Admin' ||
+        firestore.get(/databases/(default)/documents/roles/$(request.auth.uid)).data.role == 'super_admin' ||
+        firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data.role == 'super_admin'
+      ));
+    }
+
+    function isOpportunitiesManager() {
+      return isSuperAdmin() || (isSignedIn() && (
+        request.auth.token.role == 'opportunities_manager' || 
+        firestore.get(/databases/(default)/documents/roles/$(request.auth.uid)).data.role == 'opportunities_manager'
+      ));
+    }
+
+    function isAcademyManager() {
+      return isSuperAdmin() || (isSignedIn() && (
+        request.auth.token.role == 'academy_manager' || 
+        firestore.get(/databases/(default)/documents/roles/$(request.auth.uid)).data.role == 'academy_manager'
+      ));
+    }
+
+    function isServicesManager() {
+      return isSuperAdmin() || (isSignedIn() && (
+        request.auth.token.role == 'support_services_manager' || 
+        request.auth.token.role == 'services_manager' || 
+        firestore.get(/databases/(default)/documents/roles/$(request.auth.uid)).data.role == 'support_services_manager'
+      ));
+    }
+
+    function isCommunityManager() {
+      return isSuperAdmin() || (isSignedIn() && (
+        request.auth.token.role == 'community_manager' || 
+        firestore.get(/databases/(default)/documents/roles/$(request.auth.uid)).data.role == 'community_manager'
+      ));
+    }
+
+    function isContentEditor() {
+      return isSuperAdmin() || (isSignedIn() && (
+        request.auth.token.role == 'content_editor' || 
+        firestore.get(/databases/(default)/documents/roles/$(request.auth.uid)).data.role == 'content_editor'
+      ));
+    }
+
+    function isValidImage() {
+      return request.resource.contentType.matches('image/.*') &&
+             request.resource.size < 5 * 1024 * 1024;
+    }
+
+    function isValidDocument() {
+      return (request.resource.contentType.matches('image/.*') || 
+              request.resource.contentType == 'application/pdf') &&
+             request.resource.size < 15 * 1024 * 1024;
+    }
+
+    // Public Assets Read
     match /{allPaths=**} {
-      allow read, write: if true;
+      allow read: if true;
+    }
+
+    // Official Branding: Logos & Favicons (Owner and Super Admin only)
+    match /logos/{fileName} {
+      allow write: if isSuperAdmin() && isValidImage();
+    }
+    match /favicons/{fileName} {
+      allow write: if isSuperAdmin() && isValidImage();
+    }
+
+    // Opportunities directory assets
+    match /opportunities/{fileName} {
+      allow write: if isOpportunitiesManager() && isValidImage();
+    }
+
+    // Academy & Course learning materials
+    match /academy/{fileName} {
+      allow write: if isAcademyManager() && isValidDocument();
+    }
+
+    // Support Services and SME package imagery
+    match /services/{fileName} {
+      allow write: if isServicesManager() && isValidImage();
+    }
+
+    // Community ecosystem & event banners
+    match /community/{fileName} {
+      allow write: if isCommunityManager() && isValidImage();
+    }
+
+    // General editorial content
+    match /content/{fileName} {
+      allow write: if isContentEditor() && isValidImage();
     }
   }
 }
-

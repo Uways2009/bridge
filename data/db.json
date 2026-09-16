@@ -21,14 +21,14 @@
       "name": "Platform Owner",
       "role": "Super Admin",
       "title": "Platform Owner & Lead Administrator",
-      "salt": "59820072130f982434fe2acd2d4c5430",
-      "passwordHash": "21e66e1cf75999e93ca5e26a0c2d68042c585718e6525d0aa96d3b4a3bd643dd635466f20899cd768f929fe153ac6e4c131f135187234f4ade6402f1df48b4e7",
+      "salt": "2d1168c214be1c55282fe2320be0ac4e",
+      "passwordHash": "ad43bc96284c8a94117f43d350a5421b228b1da7da3c5d4f790926900ef014de04153a65510c87bca745cfaa0e1be2cf541cf7781258fe0fb3706dcfecb1e170",
       "status": "Active",
       "permissions": [
         "manage_all"
       ],
       "createdAt": "2026-09-10T21:01:05.365Z",
-      "lastLogin": "2026-09-11T07:55:08.803Z"
+      "lastLogin": "2026-09-15T11:06:58.531Z"
     },
     {
       "id": "admin-root",
@@ -51,6 +51,54 @@
   "inquiries": [],
   "subscribers": [],
   "activity_logs": [
+    {
+      "id": "log-1789470418532-156",
+      "adminName": "Platform Owner",
+      "action": "Password Reset",
+      "category": "Security",
+      "details": "Password updated and session initialized.",
+      "timestamp": "2026-09-15T11:06:58.532Z"
+    },
+    {
+      "id": "log-1789470416572-103",
+      "adminName": "Platform Owner",
+      "action": "Quick Access Login",
+      "category": "Security",
+      "details": "Admin session initialized via 1-click credential provider.",
+      "timestamp": "2026-09-15T11:06:56.572Z"
+    },
+    {
+      "id": "log-1789470413920-962",
+      "adminName": "Platform Owner",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-15T11:06:53.920Z"
+    },
+    {
+      "id": "log-1789470411392-963",
+      "adminName": "Platform Owner",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-15T11:06:51.392Z"
+    },
+    {
+      "id": "log-1789470335387-750",
+      "adminName": "Platform Owner",
+      "action": "Quick Access Login",
+      "category": "Security",
+      "details": "Admin session initialized via 1-click credential provider.",
+      "timestamp": "2026-09-15T11:05:35.387Z"
+    },
+    {
+      "id": "log-1789470279497-216",
+      "adminName": "Platform Owner",
+      "action": "Administrator Login",
+      "category": "Security",
+      "details": "Logged in from IP: 127.0.0.1",
+      "timestamp": "2026-09-15T11:04:39.497Z"
+    },
     {
       "id": "log-1789469778560-16",
       "adminName": "Administrator",

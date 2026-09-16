@@ -2,126 +2,292 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Core Authentication & Token Helper
     function isSignedIn() {
       return request.auth != null;
     }
 
-    match /opportunities/{id} {
-      allow read, write: if true;
+    // Determine canonical role from Custom Claims or Authoritative Firestore Record
+    function getRole() {
+      return request.auth.token.role != null
+        ? request.auth.token.role
+        : (exists(/databases/$(database)/documents/roles/$(request.auth.uid))
+            ? get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role
+            : (exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+                ? get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role
+                : (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+                    ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+                    : 'user')));
     }
 
-    match /events/{id} {
-      allow read, write: if true;
+    // Role predicates with strict least-privilege inheritance
+    function isOwner() {
+      return isSignedIn() && (getRole() == 'owner' || getRole() == 'Owner');
     }
 
-    match /services/{id} {
-      allow read, write: if true;
+    function isSuperAdmin() {
+      return isOwner() || (isSignedIn() && (getRole() == 'super_admin' || getRole() == 'Super Admin'));
     }
 
-    match /admin_drafts/{id} {
-      allow read, write: if true;
+    function isOpportunitiesManager() {
+      return isSuperAdmin() || (isSignedIn() && (getRole() == 'opportunities_manager' || getRole() == 'Opportunities Manager'));
     }
 
-    match /settings/{id} {
-      allow read, write: if true;
+    function isAcademyManager() {
+      return isSuperAdmin() || (isSignedIn() && (getRole() == 'academy_manager' || getRole() == 'Academy Manager'));
     }
 
-    match /team_members/{id} {
-      allow read, write: if true;
+    function isSupportServicesManager() {
+      return isSuperAdmin() || (isSignedIn() && (
+        getRole() == 'support_services_manager' || 
+        getRole() == 'Support Services Manager' || 
+        getRole() == 'support_manager' || 
+        getRole() == 'Support Manager'
+      ));
     }
 
-    match /products_resources/{id} {
-      allow read, write: if true;
+    function isCommunityManager() {
+      return isSuperAdmin() || (isSignedIn() && (getRole() == 'community_manager' || getRole() == 'Community Manager'));
     }
 
-    match /contact_info/{id} {
-      allow read, write: if true;
+    function isContentEditor() {
+      return isSuperAdmin() || (isSignedIn() && (
+        getRole() == 'content_editor' || 
+        getRole() == 'Content Editor' || 
+        getRole() == 'content_manager'
+      ));
     }
 
-    match /learning_tracks/{id} {
-      allow read, write: if true;
+    function isReviewer() {
+      return isOpportunitiesManager() || (isSignedIn() && (
+        getRole() == 'reviewer' || 
+        getRole() == 'Reviewer' || 
+        getRole() == 'verification_officer' || 
+        getRole() == 'Verification Officer'
+      ));
     }
 
-    match /faqs/{id} {
-      allow read, write: if true;
+    function isSupportAgent() {
+      return isSupportServicesManager() || (isSignedIn() && (
+        getRole() == 'support_agent' || 
+        getRole() == 'Support Agent'
+      ));
     }
 
-    match /testimonials/{id} {
-      allow read, write: if true;
+    function isAnalyst() {
+      return isStaff() || (isSignedIn() && (getRole() == 'analyst' || getRole() == 'Analyst' || getRole() == 'viewer'));
     }
 
-    match /partnerships/{id} {
-      allow read, write: if true;
+    function isStaff() {
+      return isSignedIn() && (
+        isOwner() ||
+        isSuperAdmin() ||
+        isOpportunitiesManager() ||
+        isAcademyManager() ||
+        isSupportServicesManager() ||
+        isCommunityManager() ||
+        isContentEditor() ||
+        isReviewer() ||
+        isSupportAgent() ||
+        getRole() == 'analyst' ||
+        getRole() == 'viewer'
+      );
     }
 
-    match /site_settings/{id} {
-      allow read, write: if true;
-    }
-
-    match /media_assets/{id} {
-      allow read, write: if true;
-    }
-
-    match /enquiries/{id} {
-      allow read, write: if true;
-    }
-
-    match /newsletter_subscribers/{id} {
-      allow read, write: if true;
-    }
-
-    match /admin_activity_logs/{id} {
-      allow read, create: if true;
-      allow update, delete: if true;
+    // ----------------------------------------------------
+    // ROLES & ADMIN AUTHORIZATION REPOSITORIES
+    // ----------------------------------------------------
+    match /roles/{uid} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isStaff());
+      allow write: if isOwner();
     }
 
     match /admins/{id} {
-      allow read, write: if true;
+      allow read: if isSignedIn() && (request.auth.uid == id || isStaff());
+      allow write: if isOwner();
     }
 
+    // ----------------------------------------------------
+    // USERS DIRECTORY
+    // ----------------------------------------------------
     match /users/{userId} {
-      allow read, write: if true;
+      allow read: if isSignedIn() && (request.auth.uid == userId || isSuperAdmin());
+      allow create: if isSignedIn() && (request.auth.uid == userId || isSuperAdmin());
+      allow update: if isSignedIn() && (
+        isSuperAdmin() || 
+        (request.auth.uid == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'accountStatus', 'permissions']))
+      );
+      allow delete: if isOwner();
     }
 
+    // ----------------------------------------------------
+    // OPPORTUNITIES DIRECTORY
+    // ----------------------------------------------------
+    match /opportunities/{id} {
+      allow read: if (resource.data.status == 'published' || resource.data.status == 'Published') ||
+                     (isSignedIn() && (isOpportunitiesManager() || isReviewer() || isContentEditor() || isAnalyst()));
+      allow create: if isOpportunitiesManager();
+      allow delete: if isOpportunitiesManager();
+      allow update: if isOpportunitiesManager() || (
+        isReviewer() && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'verificationStatus', 'verified', 'verifiedBy', 'reviewedBy', 'rejectionReason', 'status', 'updatedAt'
+        ])
+      );
+    }
+
+    // ----------------------------------------------------
+    // TECH ACADEMY & COURSES
+    // ----------------------------------------------------
     match /academy_courses/{id} {
-      allow read, write: if true;
+      allow read: if (resource.data.publishedStatus == 'published' || resource.data.status == 'published' || resource.data.status == 'Published') ||
+                     (isSignedIn() && (isAcademyManager() || isAnalyst()));
+      allow write: if isAcademyManager();
     }
 
     match /academy_applications/{id} {
-      allow read, write: if true;
+      allow create: if true;
+      allow read, update: if isAcademyManager();
+      allow delete: if isSuperAdmin();
     }
 
     match /academy_enrollments/{id} {
-      allow read, write: if true;
+      allow read: if isAcademyManager() || isAnalyst() || (isSignedIn() && request.auth.token.email == resource.data.studentEmail);
+      allow write: if isAcademyManager();
     }
 
     match /academy_schedules/{id} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isAcademyManager();
     }
 
     match /academy_materials/{id} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isAcademyManager();
     }
 
     match /academy_attendance/{id} {
-      allow read, write: if true;
+      allow read: if isAcademyManager() || isAnalyst();
+      allow write: if isAcademyManager();
     }
 
     match /academy_assignments/{id} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isAcademyManager();
     }
 
     match /academy_announcements/{id} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isAcademyManager();
     }
 
     match /academy_certificates/{id} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isAcademyManager();
     }
 
+    // ----------------------------------------------------
+    // SERVICES & SME CATALOG
+    // ----------------------------------------------------
+    match /services/{id} {
+      allow read: if (resource.data.status == 'published') ||
+                     (isSignedIn() && (isSupportServicesManager() || isContentEditor() || isAnalyst()));
+      allow write: if isSupportServicesManager();
+    }
+
+    // ----------------------------------------------------
+    // EVENTS & COMMUNITY ECOSYSTEM
+    // ----------------------------------------------------
+    match /events/{id} {
+      allow read: if (resource.data.status == 'published' || resource.data.status == 'Upcoming' || resource.data.status == 'Live') ||
+                     (isSignedIn() && (isCommunityManager() || isAcademyManager() || isAnalyst()));
+      allow write: if isCommunityManager() || isAcademyManager();
+    }
+
+    match /learning_tracks/{id} {
+      allow read: if true;
+      allow write: if isAcademyManager() || isCommunityManager();
+    }
+
+    match /testimonials/{id} {
+      allow read: if true;
+      allow write: if isCommunityManager() || isContentEditor();
+    }
+
+    match /partnerships/{id} {
+      allow read: if true;
+      allow write: if isCommunityManager();
+    }
+
+    // ----------------------------------------------------
+    // CONTENT & EDITORIAL CMS
+    // ----------------------------------------------------
+    match /faqs/{id} {
+      allow read: if true;
+      allow write: if isContentEditor() || isSuperAdmin();
+    }
+
+    match /team_members/{id} {
+      allow read: if true;
+      allow write: if isContentEditor() || isSuperAdmin();
+    }
+
+    match /contact_info/{id} {
+      allow read: if true;
+      allow write: if isContentEditor() || isSuperAdmin();
+    }
+
+    match /products_resources/{id} {
+      allow read: if (resource.data.status == 'published') || (isSignedIn() && isStaff());
+      allow write: if isSupportServicesManager() || isContentEditor() || isSuperAdmin();
+    }
+
+    match /site_settings/{id} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    match /media_assets/{id} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    match /admin_drafts/{id} {
+      allow read, write: if isStaff();
+    }
+
+    // ----------------------------------------------------
+    // AUDIT LOGS (Append-only for staff, Read by Owner & Super Admin)
+    // ----------------------------------------------------
+    match /admin_activity_logs/{id} {
+      allow read: if isSuperAdmin();
+      allow create: if isStaff();
+      allow update, delete: if false; // STRICT: Immutable audit records
+    }
+
+    // ----------------------------------------------------
+    // INQUIRIES & SUPPORT DESK
+    // ----------------------------------------------------
+    match /enquiries/{id} {
+      allow create: if true; // Public submission
+      allow read, update: if isSupportAgent();
+      allow delete: if isSuperAdmin();
+    }
+
+    match /newsletter_subscribers/{id} {
+      allow create: if true; // Public newsletter signup
+      allow read: if isCommunityManager() || isSuperAdmin();
+      allow update, delete: if isSuperAdmin();
+    }
+
+    // Default Fallback: Deny all
     match /{document=**} {
       allow read, write: if false;
     }
   }
 }
-

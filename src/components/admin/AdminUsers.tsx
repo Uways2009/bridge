@@ -29,10 +29,16 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-export const ROLE_DEFINITIONS: Record<
+export const ROLE_DEFINITIONS: Partial<Record<
   PlatformRole,
   { label: string; badgeColor: string; description: string; tier: string }
-> = {
+>> = {
+  owner: {
+    label: 'Platform Owner',
+    badgeColor: 'bg-amber-100 text-amber-900 border-amber-300 font-bold',
+    description: 'Supreme executive authority across the entire platform, infrastructure, and governance.',
+    tier: 'Executive Governance',
+  },
   super_admin: {
     label: 'Super Admin',
     badgeColor: 'bg-purple-100 text-purple-900 border-purple-200',
@@ -270,6 +276,16 @@ export const AdminUsers: React.FC = () => {
   // Edit Role Handler
   const handleSaveRole = async () => {
     if (!editingRoleUser) return;
+    const isOwnerTarget =
+      editingRoleUser.email.toLowerCase() === 'abuunaysah74@gmail.com' ||
+      editingRoleUser.role === 'owner';
+    if (isOwnerTarget) {
+      showNotification(
+        'error',
+        'Security constraint: The Platform Owner role is protected and cannot be modified.'
+      );
+      return;
+    }
     if (editingRoleUser.role === 'super_admin' && newSelectedRole !== 'super_admin') {
       if (superAdminCount <= 1) {
         showNotification(
@@ -297,6 +313,14 @@ export const AdminUsers: React.FC = () => {
 
   // Toggle Status Handler
   const handleToggleStatus = async (user: ManagedUser) => {
+    const isOwnerTarget =
+      user.email.toLowerCase() === 'abuunaysah74@gmail.com' ||
+      user.role === 'owner';
+    if (isOwnerTarget) {
+      showNotification('error', 'Security constraint: The Platform Owner account cannot be disabled.');
+      return;
+    }
+
     const targetStatus: UserAccountStatus =
       user.accountStatus === 'active' ? 'disabled' : 'active';
 
@@ -363,6 +387,13 @@ export const AdminUsers: React.FC = () => {
     }
 
     // Safeguards
+    const isOwnerTarget =
+      deletingUser.email.toLowerCase() === 'abuunaysah74@gmail.com' ||
+      deletingUser.role === 'owner';
+    if (isOwnerTarget) {
+      showNotification('error', 'Security constraint: The Platform Owner account cannot be deleted.');
+      return;
+    }
     if (currentAdmin?.email === deletingUser.email) {
       showNotification('error', 'Security constraint: You cannot delete your own account.');
       return;

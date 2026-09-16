@@ -101,18 +101,23 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           {/* Brand Col */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              {siteSettings?.logoDarkUrl || versionedLogoUrl || siteSettings?.logoUrl ? (
-                <img
-                  src={siteSettings?.logoDarkUrl || versionedLogoUrl || siteSettings?.logoUrl}
-                  alt={siteSettings?.logoAlt || 'NaijaBridge'}
-                  referrerPolicy="no-referrer"
-                  className="h-9 max-h-10 w-auto object-contain"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-xl bg-[#0F766E] flex items-center justify-center text-white font-bold text-sm">
-                  NB
-                </div>
-              )}
+              {(() => {
+                const brandLogo = [siteSettings?.logoDarkUrl, versionedLogoUrl, siteSettings?.logoUrl].find(
+                  (u) => typeof u === 'string' && u.trim().length > 0
+                );
+                return brandLogo ? (
+                  <img
+                    src={brandLogo}
+                    alt={siteSettings?.logoAlt || 'NaijaBridge'}
+                    referrerPolicy="no-referrer"
+                    className="h-9 max-h-10 w-auto object-contain"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-[#0F766E] flex items-center justify-center text-white font-bold text-sm">
+                    NB
+                  </div>
+                );
+              })()}
               <span className="text-2xl font-bold font-display tracking-tight text-white">
                 {siteSettings?.siteName ? siteSettings.siteName : <>Naija<span className="text-[#087F5B]">Bridge</span></>}
               </span>

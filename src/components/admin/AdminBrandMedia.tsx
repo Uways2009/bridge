@@ -802,7 +802,7 @@ export const AdminBrandMedia: React.FC = () => {
                 {/* Mock Header Bar */}
                 <div className="bg-white p-4 rounded-xl border border-[#E4E1D8] shadow-xs flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    {logoPreview ? (
+                    {logoPreview && logoPreview.trim() !== '' ? (
                       <img
                         src={logoPreview}
                         alt={logoAlt || 'Logo'}
@@ -920,7 +920,7 @@ export const AdminBrandMedia: React.FC = () => {
 
               {/* Dark canvas preview */}
               <div className="bg-[#0B1F33] p-4 rounded-xl flex items-center justify-center min-h-[64px]">
-                {darkLogoPreview ? (
+                {darkLogoPreview && darkLogoPreview.trim() !== '' ? (
                   <img src={darkLogoPreview} alt="Dark variant" className="h-8 max-h-10 w-auto object-contain" />
                 ) : (
                   <span className="text-[11px] text-white/50">No dark variant configured</span>
@@ -975,7 +975,7 @@ export const AdminBrandMedia: React.FC = () => {
               {/* Browser tab simulation */}
               <div className="bg-[#E4E1D8]/40 p-3 rounded-xl flex items-center gap-2 text-xs">
                 <div className="bg-white px-3 py-1.5 rounded-t-lg border border-[#E4E1D8] flex items-center gap-2 shadow-xs">
-                  {faviconPreview ? (
+                  {faviconPreview && faviconPreview.trim() !== '' ? (
                     <img src={faviconPreview} alt="Favicon" className="w-4 h-4 object-contain" />
                   ) : (
                     <div className="w-4 h-4 rounded-sm bg-[#087F5B] text-white text-[8px] flex items-center justify-center font-bold">
@@ -1219,7 +1219,7 @@ export const AdminBrandMedia: React.FC = () => {
                   <div className="space-y-2">
                     {/* Thumbnail */}
                     <div className="w-full h-36 bg-white rounded-xl border border-[#E4E1D8] flex items-center justify-center overflow-hidden relative">
-                      {asset.contentType?.startsWith('image/') || asset.downloadUrl?.includes('image') ? (
+                      {asset.downloadUrl && asset.downloadUrl.trim() !== '' && (asset.contentType?.startsWith('image/') || asset.downloadUrl.includes('image')) ? (
                         <img
                           src={asset.downloadUrl}
                           alt={asset.altText || asset.filename}

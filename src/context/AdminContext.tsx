@@ -93,6 +93,8 @@ import {
   restoreProductResourceInFirestore,
   permanentDeleteProductResourceInFirestore,
   ensureFirebaseAuth,
+  verifyAdminCredentialsInFirestore,
+  resetAdminPasswordInFirestore,
 } from '../lib/firebaseService';
 import { getVersionedMediaUrl } from '../lib/imageOptimizer';
 
@@ -674,7 +676,52 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     const cleanEmail = email.toLowerCase().trim();
 
-    // 1. Primary Authentication: Same-origin backend server (Works on ANY domain without Firebase domain whitelist or provider restrictions)
+    if (!cleanEmail || !password) {
+      return { success: false, error: 'Email and password are required.' };
+    }
+
+    // 1. Cross-Domain Direct Firestore Authentication (Works identically across all hosts including Vercel)
+    try {
+      const fsResult = await verifyAdminCredentialsInFirestore(cleanEmail, password);
+      if (fsResult.success && fsResult.profile) {
+        const p = fsResult.profile;
+        const adminUser: AdminUser = {
+          id: p.uid,
+          name: p.name,
+          email: p.email,
+          role: p.role === 'super_admin' ? 'Super Admin' : (p.role as any),
+          avatar: '',
+          title: p.title,
+          lastLogin: new Date().toISOString(),
+          status: 'Active',
+          permissions: ['manage_all'],
+        };
+
+        const sessionToken = `nb_admin_${p.uid}_${Date.now()}`;
+        setCurrentAdmin(adminUser);
+        setToken(sessionToken);
+        sessionStorage.setItem(TOKEN_KEY, sessionToken);
+        localStorage.setItem(TOKEN_KEY, sessionToken);
+        setIsSessionLocked(false);
+        setSessionRemainingSeconds(14400);
+
+        // Opportunistically mirror session to backend server if running
+        fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleanEmail, password }),
+        }).catch(() => {});
+
+        return { success: true };
+      } else if (fsResult.error && !fsResult.error.includes('offline')) {
+        // Explicit credential rejection from Firestore: do not bypass
+        // Still allow fallback to backend server if Firestore was not ready
+      }
+    } catch (fsErr) {
+      console.warn('Firestore direct auth check notice:', fsErr);
+    }
+
+    // 2. Same-origin backend server verification
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -703,13 +750,6 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsSessionLocked(false);
         setSessionRemainingSeconds(14400);
 
-        // Opportunistic Firebase Auth sync in background (safely catch if disabled in console or unauthorized domain)
-        try {
-          await loginAdmin(cleanEmail, password);
-        } catch (fbErr: any) {
-          console.info('Firebase client auth notice (using authenticated server session):', fbErr?.message || fbErr);
-        }
-
         return { success: true };
       }
 
@@ -717,46 +757,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         return { success: false, error: data.error };
       }
     } catch (serverErr) {
-      console.warn('Backend login endpoint notice, attempting direct Firebase authentication:', serverErr);
+      console.warn('Backend login endpoint unavailable:', serverErr);
     }
 
-    // 2. Secondary Direct Firebase Fallback
-    try {
-      const { user, profile } = await loginAdmin(cleanEmail, password);
-      const adminUser: AdminUser = {
-        id: profile.uid,
-        name: profile.name,
-        email: profile.email,
-        role: profile.role === 'super_admin' ? 'Super Admin' : (profile.role as any),
-        avatar: '',
-        title: profile.title,
-        lastLogin: new Date().toISOString(),
-        status: 'Active',
-        permissions: ['manage_all'],
-      };
-
-      setCurrentAdmin(adminUser);
-      setToken(user.uid);
-      sessionStorage.setItem(TOKEN_KEY, user.uid);
-      localStorage.setItem(TOKEN_KEY, user.uid);
-      setIsSessionLocked(false);
-      setSessionRemainingSeconds(14400);
-      return { success: true };
-    } catch (err: any) {
-      if (err?.code === 'auth/operation-not-allowed' || err?.message?.includes('operation-not-allowed')) {
-        return {
-          success: false,
-          error: 'Invalid administrator email or password. Please verify your credentials or use Password Reset.',
-        };
-      }
-      if (err?.code === 'auth/unauthorized-domain' || err?.message?.includes('unauthorized-domain')) {
-        return {
-          success: false,
-          error: 'Domain authorization notice: Please sign in with your administrator email and password.',
-        };
-      }
-      return { success: false, error: err?.message || 'Authentication failed. Please verify your credentials.' };
-    }
+    return {
+      success: false,
+      error: 'Invalid administrator email or password. Please verify your credentials or use Password Reset.',
+    };
   };
 
   const loginWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
@@ -842,28 +849,68 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const resetPassword = async (email: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
+    const cleanEmail = email.toLowerCase().trim();
+
+    if (!cleanEmail || !newPassword) {
+      return { success: false, error: 'Email and new password are required.' };
+    }
+
+    if (newPassword.trim().length < 4) {
+      return { success: false, error: 'Password must be at least 4 characters long.' };
+    }
+
+    // 1. Direct Firestore reset (Strictly checks isRecognizedAdminEmail and updates credentials for ALL domains)
+    const fsReset = await resetAdminPasswordInFirestore(cleanEmail, newPassword);
+    if (!fsReset.success) {
+      return {
+        success: false,
+        error: fsReset.error || 'Access denied: This email address is not recognized as an authorized administrator account.',
+      };
+    }
+
+    // 2. Also mirror to local backend server if reachable
     try {
       const res = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), newPassword }),
+        body: JSON.stringify({ email: cleanEmail, newPassword }),
       });
       const data = await res.json();
-      if (res.ok && data.success) {
-        if (data.token && data.user) {
-          sessionStorage.setItem(TOKEN_KEY, data.token);
-          localStorage.setItem(TOKEN_KEY, data.token);
-          setToken(data.token);
-          setCurrentAdmin(data.user);
-          setIsSessionLocked(false);
-          setSessionRemainingSeconds(14400);
-        }
+      if (res.ok && data.success && data.token && data.user) {
+        sessionStorage.setItem(TOKEN_KEY, data.token);
+        localStorage.setItem(TOKEN_KEY, data.token);
+        setToken(data.token);
+        setCurrentAdmin(data.user);
+        setIsSessionLocked(false);
+        setSessionRemainingSeconds(14400);
         return { success: true };
       }
-      return { success: false, error: data.error || 'Password update failed.' };
     } catch {
-      return { success: false, error: 'Authentication server unavailable.' };
+      // Offline / serverless host: already durably synchronized in Firestore
     }
+
+    // Direct session establishment from verified Firestore profile
+    const profile = await getAdminProfile(cleanEmail, cleanEmail);
+    const adminUser: AdminUser = {
+      id: profile?.uid || `admin-${cleanEmail.replace(/[^a-z0-9]/g, '-')}`,
+      name: profile?.name || (cleanEmail.includes('abuunaysah') ? 'Platform Owner' : 'Administrator'),
+      email: cleanEmail,
+      role: 'Super Admin',
+      avatar: '',
+      title: profile?.title || 'Administrator',
+      lastLogin: new Date().toISOString(),
+      status: 'Active',
+      permissions: ['manage_all'],
+    };
+    const sessionToken = `nb_admin_${adminUser.id}_${Date.now()}`;
+    sessionStorage.setItem(TOKEN_KEY, sessionToken);
+    localStorage.setItem(TOKEN_KEY, sessionToken);
+    setToken(sessionToken);
+    setCurrentAdmin(adminUser);
+    setIsSessionLocked(false);
+    setSessionRemainingSeconds(14400);
+
+    return { success: true };
   };
 
   const requestPasswordResetEmail = async (email: string): Promise<{ success: boolean; message?: string }> => {
